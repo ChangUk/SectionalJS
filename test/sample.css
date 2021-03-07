@@ -1,0 +1,208 @@
+@font-face {
+	font-family: "Chosunilbo_myungjo";
+	src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff") format("woff");
+	font-weight: normal;
+	font-style: normal;
+}
+
+*:focus {
+	outline: none;
+}
+body, h1, h2, h3, h4, h5, h6, p, blockquote, pre, hr, dl, dd, ol, ul, figure {
+	margin: 0; padding: 0;
+}
+body {
+	font-family: "Chosunilbo_myungjo", "Segoe UI", Helvetica, Arial, sans-serif;
+	text-align: justify;
+	font-size: 16px;
+	line-height: 1.6;
+	font-kerning: normal;
+	text-shadow: 0 0 0.07rem rgba(0, 0, 0, 0.3);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+strong {
+	font-weight: 600;
+	box-shadow: inset 0 -6px 0 #ffee58;
+}
+
+code {
+	font-family: consolas;
+	word-break: keep-all;
+	word-wrap: break-word;
+	line-height: 1.2;
+}
+*:not(pre) > code {
+	display: inline-block;
+	margin: 0;
+	padding: 0.2em 0.4em;
+	font-size: 0.875em;
+	background: #f0f0f0;
+	border-radius: 3px;
+}
+
+
+
+/* Section */
+section {
+	padding: 1.6em;
+}
+article > section {
+	border-top: solid 1px #888;
+}
+section > section {
+	border-top: dashed 1px #888;
+}
+
+
+
+/* Paragraph */
+p { margin: 0 0 .6em 0; }
+p:last-child { margin-bottom: 0 !important; }
+
+
+
+/* Table */
+table.stn-table {
+	margin: 1.6em 0;
+	width: 100%;
+	color: #3f3f3f;
+	border-collapse: collapse;
+	border: 1px solid #e8e8e8;
+}
+table.stn-table .center {
+	text-align: center;
+}
+table.stn-table .right {
+	text-align: right;
+}
+table.stn-table .hidden {
+	display: none;
+}
+table.stn-table thead {
+	border-bottom: 2px solid #d1d1d1;
+}
+table.stn-table tfoot td {
+	background: whitesmoke;
+}
+table.stn-table th, table.stn-table td.row-header {
+	padding: .5em .8em;
+	background: whitesmoke;
+	border: 1px solid #dedede;
+}
+table.stn-table th.fit-width {
+	width: 1%; white-space: nowrap;
+}
+table.stn-table td {
+	padding: .5em .8em;
+	border: 1px solid #e8e8e8;
+}
+table.stn-table td.fit-width {
+	width: 1%; white-space: nowrap;
+}
+table.stn-table td > p:first-child {
+	margin-top: 0;
+}
+table.stn-table td > p:last-child {
+	margin-bottom: 0;
+}
+
+
+
+/* Stylesheet */
+table.stn-spreadsheet {
+	margin: 1.6em 0;
+	width: 100%;
+	color: #3f3f3f;
+	border-collapse: collapse;
+	border: 1px solid #e8e8e8;
+}
+table.stn-spreadsheet .center {
+	text-align: center;
+}
+table.stn-spreadsheet .right {
+	text-align: right;
+}
+table.stn-spreadsheet .hidden {
+	display: none;
+}
+table.stn-spreadsheet thead {
+	border-bottom: 2px solid #d1d1d1;
+}
+table.stn-spreadsheet thead tr::before {
+	content: '';
+	min-width: 50px;
+}
+table.stn-spreadsheet th {
+	padding: 0 !important;
+	background: whitesmoke;
+	border: 1px solid #dedede;
+}
+table.stn-spreadsheet td {
+	padding: .5em .8em;
+	border: 1px solid #e8e8e8;
+}
+table.stn-spreadsheet td > p:first-child {
+	margin-top: 0;
+}
+table.stn-spreadsheet td > p:last-child {
+	margin-bottom: 0;
+}
+table.stn-spreadsheet th input.filter-combobox {
+	margin: 0;
+	padding: .5em;
+	width: 100%;
+	border: none;
+	background: transparent;
+	font: 600 16px/1.6 "Chosunilbo_myungjo";
+	color: #383838;
+	text-align: center;
+	box-sizing: border-box;
+}
+table.stn-spreadsheet th input.filter-combobox::placeholder {
+	font: 600 16px/1.6 "Chosunilbo_myungjo";
+	color: #383838;
+	text-align: center;
+}
+table.stn-spreadsheet th input.filter-combobox:focus::placeholder {
+	color: #7f7f7f;
+}
+table.stn-spreadsheet tbody {
+	counter-reset: var(--rowCounterId);
+}
+table.stn-spreadsheet tbody tr::before {
+	content: counter(var(--rowCounterId));
+}
+table.stn-spreadsheet tbody td {
+	white-space: nowrap;
+}
+table.stn-spreadsheet tr {
+	counter-increment: var(--rowCounterId);
+}
+table.stn-spreadsheet tr::before {
+	display: table-cell;
+	padding: .5em .8em;
+	width: 1%;
+	font: 600 16px/1.6 "Chosunilbo_myungjo";
+	text-align: right;
+	white-space: nowrap;
+	background: whitesmoke;
+	border: 1px solid #e8e8e8;
+	box-sizing: border-box;
+}
+table.stn-spreadsheet tfoot tr::before {
+	content: '';
+	min-width: 50px;
+}
+table.stn-spreadsheet tfoot td {
+	line-height: 1.2;
+	text-align: center;
+	background: whitesmoke;
+}
+table.stn-spreadsheet tfoot td::before {
+	content: attr(stn-footer-label);
+	display: block;
+	font-size: .7rem;
+	text-transform: uppercase;
+}
