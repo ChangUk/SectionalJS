@@ -35,6 +35,7 @@ fetch("sample_data.json")
 
 			// Render math equations
 			renderMathInElement(el, {
+				throwOnError: false,
 				delimiters: [
 					{left: "$$", right: "$$", display: true},
 					{left: "$", right: "$", display: false},
