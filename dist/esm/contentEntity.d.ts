@@ -5,7 +5,10 @@ export declare class ContentEntity {
     protected _data: Record<EntityID, Record<string, any>>;
     protected _callback: Callback;
     constructor(id: EntityID, data: Record<EntityID, any>, callback: Callback);
-    protected _idfmt(id: EntityID): string;
+    idfmt(id: EntityID): string;
+    clsfmt(clsname: string): string;
+    cssvarfmt(varname: string): string;
+    attrfmt(attrname: string): string;
     private _propRequired;
     protected _getEntity(id: EntityID): any;
 }

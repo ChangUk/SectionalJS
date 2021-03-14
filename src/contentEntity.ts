@@ -5,6 +5,7 @@ export class ContentEntity {
 	protected _id: EntityID;
 	protected _data: Record<EntityID, Record<string, any>>;
 	protected _callback: Callback;
+
 	constructor(id: EntityID, data: Record<EntityID, any>, callback: Callback) {
 		if (!id || !data || !(id in data))
 			throw new Error(`Invalid parameters: ${id}, ${data}`);
@@ -13,8 +14,17 @@ export class ContentEntity {
 		this._callback = typeof callback === "function" ? callback : (e) => { };
 	}
 
-	protected _idfmt(id: EntityID): string {
-		return `eid-${id}`;
+	public idfmt(id: EntityID): string {
+		return `stnl-${id}`;
+	}
+	public clsfmt(clsname: string): string {
+		return `stnl-${clsname}`;
+	}
+	public cssvarfmt(varname: string): string {
+		return `stnl${varname}`;
+	}
+	public attrfmt(attrname: string): string {
+		return `stnl-${attrname}`;
 	}
 
 	private _propRequired(entityType: string): Array<string> {
@@ -59,7 +69,7 @@ export class Paragraph extends ContentEntity {
 		let entity = this._getEntity(this._id);
 
 		let p = document.createElement("p");
-		p.id = this._idfmt(this._id);
+		p.id = this.idfmt(this._id);
 		p.innerHTML = entity.content;
 		parentEl.appendChild(p);
 		this._callback.call(this, p);
@@ -140,8 +150,8 @@ export class Table extends ContentEntity {
 		let entity = this._getEntity(this._id);
 
 		let table = document.createElement("table");
-		table.id = this._idfmt(this._id);
-		table.classList.add("stn-table");
+		table.id = this.idfmt(this._id);
+		table.classList.add("stnl-table");
 		parentEl.appendChild(table);
 		if (entity.content.header) this._header(entity.content.header, table);
 		if (entity.content.body) this._body(entity.content.body, table);
@@ -155,7 +165,7 @@ export class Table extends ContentEntity {
 		let entity = this._getEntity(id);
 
 		let thead = document.createElement("thead");
-		thead.id = this._idfmt(id);
+		thead.id = this.idfmt(id);
 		parentEl.appendChild(thead);
 		const getHeaderDepth = (eid: EntityID): number => {
 			if (this._data[eid].children) {
@@ -190,7 +200,7 @@ export class Table extends ContentEntity {
 		let entity = this._getEntity(id);
 
 		let th = document.createElement("th");
-		th.id = this._idfmt(id);
+		th.id = this.idfmt(id);
 		th.innerHTML = entity.label;
 		parentEl.children[row].appendChild(th);
 
@@ -241,7 +251,7 @@ export class Table extends ContentEntity {
 		let entity = this._getEntity(id);
 
 		let tbody = document.createElement("tbody");
-		tbody.id = this._idfmt(id);
+		tbody.id = this.idfmt(id);
 		parentEl.appendChild(tbody);
 		const getHeaderDepth = (eid: EntityID) => {
 			if (this._data[eid].children) {
@@ -281,10 +291,10 @@ export class Table extends ContentEntity {
 		}
 
 		let td = document.createElement("td");
-		td.id = this._idfmt(id);
+		td.id = this.idfmt(id);
 		if (entity.hasOwnProperty("title")) td.setAttribute("title", entity.title);
 		td.innerHTML = entity.label;
-		td.classList.add("row-header");
+		td.classList.add(this.clsfmt("row-header"));
 		parentEl.children[row].appendChild(td);
 
 		// if (entity.action) this.setAction(td, id);
@@ -316,7 +326,7 @@ export class Table extends ContentEntity {
 				else if (child.type === "tableRow")
 					rows = this._row(childId, parentEl, row, col + (colspan ? colspan : 1), order === 0);
 				else
-					throw new Error(`"Invalid child entity: ${child.type}"`);
+					throw new Error(`Invalid child entity: ${child.type}`);
 				row += rows;
 				total += rows;
 			});
@@ -331,7 +341,7 @@ export class Table extends ContentEntity {
 
 		if (!isFirstChild) {
 			let tr = document.createElement("tr");
-			tr.id = this._idfmt(id);
+			tr.id = this.idfmt(id);
 			parentEl.appendChild(tr);
 		}
 
@@ -350,7 +360,7 @@ export class Table extends ContentEntity {
 		let entity = this._getEntity(id);
 
 		let td = document.createElement("td");
-		td.id = this._idfmt(id);
+		td.id = this.idfmt(id);
 		parentEl.children[row].appendChild(td);
 
 		// if (entity.action) this.setAction(td, id);
@@ -500,8 +510,8 @@ export class Spreadsheet extends ContentEntity {
 		let entity = this._getEntity(this._id);
 
 		let table = document.createElement("table");
-		table.id = this._idfmt(this._id);
-		table.classList.add("stn-spreadsheet");
+		table.id = this.idfmt(this._id);
+		table.classList.add(this.clsfmt("spreadsheet"));
 		parentEl.appendChild(table);
 
 		if (entity.content.footer) this._footer(entity.content.footer, table);
@@ -516,7 +526,7 @@ export class Spreadsheet extends ContentEntity {
 		let entity = this._getEntity(id);
 
 		let thead = document.createElement("thead");
-		thead.id = this._idfmt(id);
+		thead.id = this.idfmt(id);
 		parentEl.appendChild(thead);
 		let tr = document.createElement("tr");
 		thead.appendChild(tr);
@@ -529,11 +539,11 @@ export class Spreadsheet extends ContentEntity {
 
 			let combobox = document.createElement("input");
 			combobox.type = "text";
-			combobox.id = `combobox-${this._id}-${key}`;
-			combobox.className = "filter-combobox";
+			combobox.id = this.idfmt(`combobox-${this._id}-${key}`);
+			combobox.className = this.clsfmt("filter-combobox");
 			combobox.title = key;
 			combobox.placeholder = key;
-			combobox.setAttribute("list", `datalist-${this._id}-${key}`);
+			combobox.setAttribute("list", this.idfmt(`datalist-${this._id}-${key}`));
 			combobox.setAttribute("col", col.toString());
 			combobox.addEventListener("keydown", (e) => {
 				let el = <HTMLInputElement>e.target;
@@ -551,7 +561,7 @@ export class Spreadsheet extends ContentEntity {
 
 				let el = <HTMLInputElement>e.target;
 				let stylesheet = this._getEntity(this._id);
-				let table = <HTMLTableElement>document.querySelector(`#${this._idfmt(this._id)}`);
+				let table = <HTMLTableElement>document.querySelector(`#${this.idfmt(this._id)}`);
 				let tbody = table.querySelector("tbody");
 				let tableRows = (<HTMLTableSectionElement>tbody).querySelectorAll("tr");
 				let col = parseInt(<string>el.getAttribute("col"));
@@ -578,7 +588,8 @@ export class Spreadsheet extends ContentEntity {
 						// 	this._mask[row][col] = 0;
 					});
 				} else {
-					el.setAttribute("list", el.id.replace(/^combobox/gi, "datalist"));
+					let regex = new RegExp(`^${this.idfmt("combobox")}`, "gi");
+					el.setAttribute("list", el.id.replace(regex, this.idfmt("datalist")));
 				}
 
 				if (stylesheet.content.footer) {
@@ -620,7 +631,8 @@ export class Spreadsheet extends ContentEntity {
 
 				// Add options to datalist
 				this._keys.forEach((key: ColumnKey, order: number) => {
-					let datalist = <HTMLDataListElement>document.querySelector(`#datalist-${this._id}-${key}`);
+					let datalistId = this.idfmt(`datalist-${this._id}-${key}`);
+					let datalist = <HTMLDataListElement>document.querySelector(`#${datalistId}`);
 					while (datalist && datalist.lastChild) datalist.removeChild(datalist.lastChild);
 					this._values[key].forEach((value) => {
 						let option = document.createElement("option");
@@ -636,7 +648,7 @@ export class Spreadsheet extends ContentEntity {
 
 			// Datalist
 			let datalist = document.createElement("datalist");
-			datalist.id = `datalist-${this._id}-${key}`;
+			datalist.id = this.idfmt(`datalist-${this._id}-${key}`);
 			th.appendChild(datalist);
 			this._values[key].forEach((value) => {
 				let option = document.createElement("option");
@@ -647,7 +659,7 @@ export class Spreadsheet extends ContentEntity {
 		});
 
 		if (this._filter) {
-			let comboboxes = parentEl.querySelectorAll(".stn-filter-combobox");
+			let comboboxes = parentEl.querySelectorAll(`.${this.clsfmt("filter-combobox")}`);
 			if (comboboxes.length) {
 				this._keys.forEach((key: ColumnKey, index: number) => {
 					let value = this._filter[key];
@@ -666,8 +678,8 @@ export class Spreadsheet extends ContentEntity {
 		let entity = this._getEntity(id);
 
 		let tbody = document.createElement("tbody");
-		tbody.id = this._idfmt(id);
-		tbody.style.setProperty("--rowCounterId", parentEl.id);
+		tbody.id = this.idfmt(id);
+		tbody.style.setProperty(`--${this.cssvarfmt("RowCounterId")}`, parentEl.id);
 		parentEl.appendChild(tbody);
 
 		this._records.forEach((childId: EntityID, order: number) => {
@@ -691,8 +703,8 @@ export class Spreadsheet extends ContentEntity {
 		let entity = this._getEntity(id);
 
 		let tr = document.createElement("tr");
-		tr.id = this._idfmt(id);
-		tr.style.setProperty("--rowCounterId", parentEl.id);
+		tr.id = this.idfmt(id);
+		tr.style.setProperty(`--${this.cssvarfmt("RowCounterId")}`, parentEl.id);
 		parentEl.appendChild(tr);
 
 		for (const key of this._keys) {
@@ -727,7 +739,7 @@ export class Spreadsheet extends ContentEntity {
 		let tfoot: HTMLElement | null = parentEl.querySelector("tfoot");
 		if (!tfoot) {
 			tfoot = document.createElement("tfoot");
-			tfoot.id = this._idfmt(id);
+			tfoot.id = this.idfmt(id);
 			parentEl.appendChild(tfoot);
 		}
 		let footerRow: HTMLElement | null = tfoot.querySelector("tr");
@@ -740,7 +752,7 @@ export class Spreadsheet extends ContentEntity {
 		for (const key of this._keys) {
 			let type = entity.content[key] ? entity.content[key] : "";
 			let td = document.createElement("td");
-			td.setAttribute("stn-footer-label", type);
+			td.setAttribute(this.attrfmt("footer-label"), type);
 			footerRow.appendChild(td);
 
 			if (type === "total") {

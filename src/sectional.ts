@@ -21,8 +21,11 @@ export class Sectional {
 	}
 
 	private _init(id: EntityID, parent: EntityID, depth: number): void {
+		if (!id) return;
+
 		// Metadata
 		let entity = this._data[id];
+		if (!entity) throw new Error(`Invalid entity: ${id}`);
 		entity._id = id;
 		entity._depth = depth;
 		if (parent) {
@@ -50,26 +53,33 @@ export class Sectional {
 		if (children) {
 			children.forEach((childId: string) => {
 				let child = this._data[childId];
-				let childType = child.type.toLowerCase();
-				if (childType === "article" || childType === "section") {
-					this[childType as keyof Sectional](childId, parentEl);
-				} else {
-					let className: string = childType.replace(/^.{1}/g, (c: string) => c.toUpperCase());
-					let entity = this._createEntityInstance(className, childId);
-					entity.render(parentEl);
+				if (child) {
+					let childType = child.type.toLowerCase();
+					if (childType === "article" || childType === "section") {
+						this[childType as keyof Sectional](childId, parentEl);
+					} else {
+						let className: string = childType.replace(/^.{1}/g, (c: string) => c.toUpperCase());
+						let entity = this._createEntityInstance(className, childId);
+						entity.render(parentEl);
+					}
 				}
 			});
 		}
 	}
 
+	public getData() {
+		return this._data;
+	}
+
 	public article(id: EntityID): void {
 		if (!id || !(id in this._data)) throw new Error("Invalid parameter: article(id: string);");
 		let entity = this._data[id];
-		if (entity.type !== "article") throw new Error(`"Invalid type: ${entity.type}"`);
+		if (entity && entity.type !== "article") throw new Error(`"Invalid type: ${entity.type}"`);
 
 		this.clearViewport();
 
 		let article = document.createElement("article");
+		article.id = `stnl-${id}`;
 		this._viewport.appendChild(article);
 		entity._dom = article;
 		if (entity.label) {
@@ -82,13 +92,14 @@ export class Sectional {
 		if (!id || !parentEl || !(id in this._data))
 			throw new Error("Invalid parameters: section(id: string, parentId: string)");
 		let entity = this._data[id];
-		if (entity.type !== "section") throw new Error(`"Invalid type: ${entity.type}"`);
+		if (entity && entity.type !== "section") throw new Error(`"Invalid type: ${entity.type}"`);
 
 		let section = document.createElement("section");
 		parentEl.appendChild(section);
 		entity._dom = section;
 		if (entity.label) {
 			let heading = document.createElement("h" + entity._depth);
+			heading.id = `stnl-${id}`;
 			heading.innerHTML = entity.label;
 			section.appendChild(heading);
 			section.setAttribute("area-label", entity.label);

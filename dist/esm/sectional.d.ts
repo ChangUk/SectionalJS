@@ -9,6 +9,7 @@ export declare class Sectional {
     private _init;
     private _createEntityInstance;
     private _children;
+    getData(): Record<string, any>;
     article(id: EntityID): void;
     section(id: EntityID, parentEl: HTMLElement): void;
     clearViewport(): void;
