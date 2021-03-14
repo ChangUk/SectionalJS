@@ -48,6 +48,80 @@ export class ContentEntity {
         // TODO: minimum requirements test
         return entity;
     }
+    _setAction(id, el) {
+        if (!id)
+            return null;
+        let entity = this._getEntity(id);
+        el.classList.add(this.clsfmt("action"));
+        let actionItems = [];
+        Object.keys(entity.action).forEach((event) => {
+            const action = entity.action[event];
+            actionItems.push(`${event}:${action}`);
+            el.addEventListener(`${event}`, (e) => {
+                let target = e.target;
+                if (target && target.hasAttribute("actions")) {
+                    let actions = target.getAttribute("actions");
+                    if (actions) {
+                        let tokens = actions.split(",");
+                        for (let i = 0; i < tokens.length; i++) {
+                            let action = tokens[i].split(":");
+                            if (action[0] === e.type) {
+                                this._action(action[1]);
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        el.setAttribute("actions", actionItems.join(','));
+        if (entity.action.hasOwnProperty("click"))
+            el.setAttribute("title", this._data[entity.action.click].content);
+    }
+    _action(id) {
+        if (!id)
+            return null;
+        let entity = this._getEntity(id);
+        if (entity.type !== "action")
+            return;
+        let contentType = entity.contentType || "text/plain; charset=utf-8";
+        if (contentType === "url") {
+            window.open(entity.content);
+        }
+        else {
+            // // Open encrypted file
+            // var xhr = new XMLHttpRequest();
+            // xhr.open("GET", entity.content);
+            // xhr.onreadystatechange = function (e) {
+            // 	if (xhr.readyState === 4 && xhr.status === 200) {
+            // 		try {
+            // 			// var ui8a = new Uint8Array(xhr.response);
+            // 			var decrypted = CryptoJS.AES.decrypt(xhr.responseText, sessionStorage.getItem("passphrase"));
+            // 			var arr = decrypted.hasOwnProperty("words") ? decrypted.words : [];
+            // 			var len = decrypted.hasOwnProperty("sigBytes") ? decrypted.sigBytes : decrypted.length * 4;
+            // 			var ui8a = new Uint8Array(len);
+            // 			var offset = 0;
+            // 			for (var i = 0; i < len; i++) {
+            // 				ui8a[offset++] = arr[i] >> 24;
+            // 				ui8a[offset++] = (arr[i] >> 16) & 0xff;
+            // 				ui8a[offset++] = (arr[i] >> 8) & 0xff;
+            // 				ui8a[offset++] = arr[i] & 0xff;
+            // 			}
+            // 			var blob = new Blob([ui8a], { type: contentType });
+            // 			var blobUrl = URL.createObjectURL(blob);
+            // 			var a = document.createElement("a");
+            // 			a.href = blobUrl;
+            // 			a.target = "_blank";
+            // 			a.click();
+            // 			URL.revokeObjectURL(blobUrl);
+            // 		} catch (e) {
+            // 			alert(e);
+            // 		}
+            // 	}
+            // };
+            // xhr.send();
+        }
+    }
 }
 export class Paragraph extends ContentEntity {
     render(parentEl) {
@@ -329,7 +403,8 @@ export class Table extends ContentEntity {
         let td = document.createElement("td");
         td.id = this.idfmt(id);
         parentEl.children[row].appendChild(td);
-        // if (entity.action) this.setAction(td, id);
+        if (entity.action)
+            this._setAction(id, td);
         if (entity.hasOwnProperty("highlight") && entity.highlight) {
             let text = entity.content.replace(/\s*\([^)]*\)\s*/g, "");
             td.innerHTML = entity.content.substring(text.length);
@@ -498,8 +573,8 @@ export class Spreadsheet extends ContentEntity {
             combobox.setAttribute("list", this.idfmt(`datalist-${this._id}-${key}`));
             combobox.setAttribute("col", col.toString());
             combobox.addEventListener("keydown", (e) => {
-                let el = e.target;
                 e.stopPropagation();
+                let el = e.target;
                 if (el && e.key === "Escape") {
                     el.value = "";
                     el.dispatchEvent(new Event("input"));

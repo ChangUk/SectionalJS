@@ -11,6 +11,8 @@ export declare class ContentEntity {
     attrfmt(attrname: string): string;
     private _propRequired;
     protected _getEntity(id: EntityID): any;
+    protected _setAction(id: EntityID, el: HTMLElement): null | undefined;
+    protected _action(id: EntityID): any;
 }
 export declare class Paragraph extends ContentEntity {
     render(parentEl: HTMLElement): HTMLElement;
