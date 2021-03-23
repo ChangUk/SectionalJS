@@ -1,17 +1,16 @@
-declare type Callback = (el: HTMLElement, ...args: any[]) => void;
-declare type EntityID = string;
+import type { EntityID, EntityRecord } from "./entity.js";
 export declare class Sectional {
     private _viewport;
     private _data;
     private _callback;
-    constructor(dom: HTMLElement, json: any, callback: Callback);
+    private _layout;
+    constructor(view: HTMLElement, json: Record<EntityID, EntityRecord>, options: Record<string, any>);
     static get ENTRY(): EntityID;
-    private _init;
-    private _createEntityInstance;
-    private _children;
-    getData(): Record<string, any>;
+    importData(data: Record<EntityID, EntityRecord>): void;
+    exportData(removeMeta?: boolean): any;
+    getEntity(id: EntityID): EntityRecord;
+    setEntity(id: EntityID, record: Record<string, any>): boolean;
+    getArticles(): Array<EntityID>;
     article(id: EntityID): void;
-    section(id: EntityID, parentEl: HTMLElement): void;
     clearViewport(): void;
 }
-export {};

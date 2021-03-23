@@ -9,7 +9,7 @@
         "children": [
             "3Ryao7wRn2FBjS5ko3DQDc"
         ],
-        "label": "Stylesheet Example",
+        "title": "Ledger Example",
         "type": "section"
     },
     "0cBrQxkZxP6UrMJYX8mcAT": {
@@ -17,7 +17,7 @@
             "1KQ6ULFvtYbPzcGs8nMcI0",
             "1YoFNGLkb4afbQP07DiVHJ"
         ],
-        "label": "Column #1",
+        "content": "Column #1",
         "type": "tableColumn"
     },
     "0j2iRaBt9dc9sYpZgLrtKJ": {
@@ -54,11 +54,11 @@
             "49k6tZmnGyz8jmrjcCL63q",
             "49zlqnXz4leHvWLkOsUbXh"
         ],
-        "type": "spreadsheetBody"
+        "type": "ledgerBody"
     },
     "1KQ6ULFvtYbPzcGs8nMcI0": {
         "children": [],
-        "label": "SubColumn #1",
+        "content": "SubColumn #1",
         "type": "tableColumn"
     },
     "1La1TRmairuNjFCMd0MrQm": {
@@ -67,33 +67,33 @@
             "5XO4J8eOjmrJ9qcCm9o9Cx",
             "2442dtLqpLH8shQX5Ibl2T"
         ],
-        "label": "RowHeader #1",
+        "content": "RowHeader #1",
         "type": "tableRowHeader"
     },
     "1YoFNGLkb4afbQP07DiVHJ": {
         "children": [],
-        "label": "SubColumn #2",
+        "content": "SubColumn #2",
         "type": "tableColumn"
     },
     "2442dtLqpLH8shQX5Ibl2T": {
         "children": [
             "67PcsOWafqDrwBe073bc39"
         ],
-        "label": "SubRowHeader #3",
+        "content": "SubRowHeader #3",
         "type": "tableRowHeader"
     },
     "2LwNGDcgfGMdFCLrRlNSju": {
         "children": [
             "40kQB2KDHOYid2AZ30OCyQ"
         ],
-        "label": "Document Sectioning (Layout)",
+        "title": "Document Sectioning (Layout)",
         "type": "section"
     },
     "2YHBxR4spxataeXj3UGf3h": {
         "children": [
             "5M7q4FmIMAIwd3L0Bylncd"
         ],
-        "label": "RowHeader #2",
+        "content": "RowHeader #2",
         "type": "tableRowHeader"
     },
     "2YkrgCsSMEEg4CwFc4H36I": {
@@ -124,12 +124,12 @@
             "4lcAgLgSctyLhXwrSypfwN",
             "0Al197kqx2oa5pUu3ACf1u"
         ],
-        "label": "Data Organization",
+        "title": "Data Organization",
         "type": "section"
     },
     "2kIqfLejrV4mMOo5V52x4V": {
         "children": [],
-        "label": "Column #2",
+        "content": "Column #2",
         "type": "tableColumn"
     },
     "2pby15am2SVWcwHlfhPF0w": {
@@ -146,7 +146,7 @@
             "footer": "",
             "header": "2pby15am2SVWcwHlfhPF0w"
         },
-        "label": "",
+        "title": "",
         "properties": "",
         "type": "table"
     },
@@ -158,7 +158,7 @@
             "quantity": "total",
             "recipient": "variety"
         },
-        "type": "spreadsheetFooter"
+        "type": "ledgerFooter"
     },
     "3Ryao7wRn2FBjS5ko3DQDc": {
         "classlist": "7iW2aLvoIxo7BrGz6TDI7s",
@@ -168,7 +168,7 @@
             "header": "7M6wkarHWD1Vtad4bO9wHC"
         },
         "properties": "0j2iRaBt9dc9sYpZgLrtKJ",
-        "type": "spreadsheet"
+        "type": "ledger"
     },
     "40kQB2KDHOYid2AZ30OCyQ": {
         "content": "Since the data has tree-like structure, we can access data through the **entry point** which is the root entity of entire data. (The UUID of `entry` entity is `0000000000000000000000`.)",
@@ -182,7 +182,7 @@
             "quantity": 5,
             "recipient": "Park"
         },
-        "type": "spreadsheetRecord"
+        "type": "ledgerRecord"
     },
     "49k6tZmnGyz8jmrjcCL63q": {
         "content": {
@@ -192,7 +192,7 @@
             "quantity": 13,
             "recipient": "Lee"
         },
-        "type": "spreadsheetRecord"
+        "type": "ledgerRecord"
     },
     "49zlqnXz4leHvWLkOsUbXh": {
         "content": {
@@ -202,7 +202,7 @@
             "quantity": 7,
             "recipient": "Park"
         },
-        "type": "spreadsheetRecord"
+        "type": "ledgerRecord"
     },
     "4APC7VDz5iMDlhsDfkzYBp": {
         "content": {
@@ -212,20 +212,20 @@
             "quantity": 5,
             "recipient": "Park"
         },
-        "type": "spreadsheetRecord"
+        "type": "ledgerRecord"
     },
     "4ejv4zUFyPMmRxsHt3vAUY": {
         "children": [
             "7ePikXRYRhJXeWUG2jGJdc"
         ],
-        "label": "SubRowHeader #1",
+        "content": "SubRowHeader #1",
         "type": "tableRowHeader"
     },
     "4lcAgLgSctyLhXwrSypfwN": {
         "children": [
             "2rEawPqmQzYyHJELdhlryU"
         ],
-        "label": "Table Example",
+        "title": "Table Example",
         "type": "section"
     },
     "4qxlA14aU5oQkeReOUp1kY": {
@@ -255,7 +255,7 @@
         "children": [
             "4sBSKdM0rntTgb3sJPXj7V"
         ],
-        "label": "SubRowHeader #2",
+        "content": "SubRowHeader #2",
         "type": "tableRowHeader"
     },
     "5cc5VO0yLEJibcjV0trDY9": {
@@ -274,7 +274,7 @@
             "quantity": 10,
             "recipient": "Lee"
         },
-        "type": "spreadsheetRecord"
+        "type": "ledgerRecord"
     },
     "67PcsOWafqDrwBe073bc39": {
         "children": [
@@ -298,7 +298,7 @@
             "quantity": "price",
             "recipient": "string"
         },
-        "type": "spreadsheetHeader"
+        "type": "ledgerHeader"
     },
     "7bNjDIZxoasc3d6AvqsCcz": {
         "content": "The data consists of a series of entities, and they reference each other by unique identifier (called the shortened UUID). $$E=mc^2$$",
@@ -309,7 +309,7 @@
             "58J4OpbYJjhEU9t6lnvitq",
             "2fcVO9EfKBLxim2CKaXk6M"
         ],
-        "label": "Sectional.js",
+        "title": "Sectional.js",
         "type": "article"
     },
     "7ePikXRYRhJXeWUG2jGJdc": {

@@ -1,95 +1,37 @@
-export class ContentEntity {
+import { Entity } from "./entity.js";
+export class ContentEntity extends Entity {
     constructor(id, data, callback) {
-        if (!id || !data || !(id in data))
-            throw new Error(`Invalid parameters: ${id}, ${data}`);
-        this._id = id;
-        this._data = data;
-        this._callback = typeof callback === "function" ? callback : (e) => { };
-    }
-    idfmt(id) {
-        return `stnl-${id}`;
-    }
-    clsfmt(clsname) {
-        return `stnl-${clsname}`;
-    }
-    cssvarfmt(varname) {
-        return `stnl${varname}`;
-    }
-    attrfmt(attrname) {
-        return `stnl-${attrname}`;
-    }
-    _propRequired(entityType) {
-        const requirements = {
-            table: ["content.body"],
-            tableHeader: ["children"],
-            tableColumn: ["label"],
-            tableBody: ["children"],
-            tableRowHeader: ["children", "label"],
-            tableRow: ["children"],
-            tableCell: ["content"],
-            spreadsheet: ["content.header", "content.body"],
-            spreadsheetHeader: ["content"],
-            spreadsheetBody: ["children"],
-            spreadsheetFooter: ["content"],
-            spreadsheetRecord: ["content"],
-            classlist: ["content"],
-            properties: ["content"]
-        };
-        return requirements[entityType];
-    }
-    _getEntity(id) {
-        if (!id)
-            return null;
-        if (!(id in this._data))
-            throw new Error(`Invalid entity ID: ${id}`);
-        let entity = this._data[id];
-        if (!entity.hasOwnProperty("type"))
-            throw new Error(`Incomplete entity: ${entity.toString()}`);
-        // TODO: minimum requirements test
-        return entity;
+        super(id, data, callback);
     }
     _setAction(id, el) {
         if (!id)
             return null;
         let entity = this._getEntity(id);
+        if (!entity)
+            return;
         el.classList.add(this.clsfmt("action"));
-        let actionItems = [];
-        Object.keys(entity.action).forEach((event) => {
-            const action = entity.action[event];
-            actionItems.push(`${event}:${action}`);
-            el.addEventListener(`${event}`, (e) => {
-                let target = e.target;
-                if (target && target.hasAttribute("actions")) {
-                    let actions = target.getAttribute("actions");
-                    if (actions) {
-                        let tokens = actions.split(",");
-                        for (let i = 0; i < tokens.length; i++) {
-                            let action = tokens[i].split(":");
-                            if (action[0] === e.type) {
-                                this._action(action[1]);
-                                break;
-                            }
-                        }
-                    }
-                }
-            });
+        el.addEventListener("click", (e) => {
+            let target = e.target;
+            if (target && target.hasAttribute("action")) {
+                let action = target.getAttribute("action");
+                if (action)
+                    this._action(action);
+            }
         });
-        el.setAttribute("actions", actionItems.join(','));
-        if (entity.action.hasOwnProperty("click"))
-            el.setAttribute("title", this._data[entity.action.click].content);
+        el.setAttribute("action", entity.action);
+        let actionEntity = this._getEntity(entity.action);
+        if (actionEntity && actionEntity.type === "url")
+            el.setAttribute("title", actionEntity.content);
     }
     _action(id) {
-        if (!id)
-            return null;
         let entity = this._getEntity(id);
-        if (entity.type !== "action")
+        if (!entity)
             return;
-        let contentType = entity.contentType || "text/plain; charset=utf-8";
-        if (contentType === "url") {
+        if (entity.type === "url") {
             window.open(entity.content);
         }
         else {
-            // // Open encrypted file
+            // TODO: Open encrypted file
             // var xhr = new XMLHttpRequest();
             // xhr.open("GET", entity.content);
             // xhr.onreadystatechange = function (e) {
@@ -128,6 +70,8 @@ export class Paragraph extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(this._id);
+        if (!entity)
+            return undefined;
         let p = document.createElement("p");
         p.id = this.idfmt(this._id);
         p.innerHTML = entity.content;
@@ -141,8 +85,13 @@ export class Image extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(this._id);
+        if (!entity)
+            return undefined;
         let img = document.createElement("img");
-        // TODO: listing
+        img.id = this.idfmt(this._id);
+        img.src = entity.content;
+        parentEl.appendChild(img);
+        // TODO: options
         return img;
     }
 }
@@ -151,6 +100,8 @@ export class Ulist extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(this._id);
+        if (!entity)
+            return undefined;
         let ul = document.createElement("ul");
         // TODO: listing
         return ul;
@@ -161,6 +112,8 @@ export class Olist extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(this._id);
+        if (!entity)
+            return undefined;
         let ol = document.createElement("ol");
         // TODO: listing
         return ol;
@@ -169,33 +122,40 @@ export class Olist extends ContentEntity {
 export class Table extends ContentEntity {
     constructor(id, data, callback) {
         super(id, data, callback);
+        this._headerDepth = 0;
+        this._rowHeaderDepth = 0;
         // Optional
         this._classlist = [];
         let entity = this._getEntity(this._id);
         if (!entity)
-            throw new Error(`Invalid table: ${this._id}`);
+            throw new Error(`Invalid identifier of table: ${this._id}`);
         // Entity inspection
-        if (entity.hasOwnProperty("content")) {
+        if ("content" in entity) {
             let content = entity.content;
-            if (!content.hasOwnProperty("body") || !(content.body in this._data))
+            if (!("body" in content) || !this._getEntity(content.body))
                 throw new Error(`Body is necessarily required: ${content.toString()}`);
         }
         else
             throw new Error(`Incomplete entity: ${entity.toString()}`);
-        // Properties
-        if (entity.hasOwnProperty("properties") && entity.properties in this._data) {
-            let properties = this._data[entity.properties].content;
-            // TODO: properties (not defined yet)
+        if ("properties" in entity) {
+            let subEntity = this._getEntity(entity.properties);
+            if (subEntity) {
+                let properties = subEntity.content;
+                // TODO: properties (not defined yet)
+            }
         }
-        // Classlist
-        if (entity.hasOwnProperty("classlist") && entity.classlist in this._data) {
-            this._classlist = this._data[entity.classlist].content;
+        if ("classlist" in entity) {
+            let subEntity = this._getEntity(entity.classlist);
+            if (subEntity)
+                this._classlist = subEntity.content;
         }
     }
     render(parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(this._id);
+        if (!entity)
+            return undefined;
         let table = document.createElement("table");
         table.id = this.idfmt(this._id);
         table.classList.add("stnl-table");
@@ -206,19 +166,26 @@ export class Table extends ContentEntity {
             this._body(entity.content.body, table);
         if (entity.content.footer)
             this._footer(entity.content.footer, table);
+        // TODO: "title" in entity -> caption
         return table;
     }
     _header(id, parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of tableHeader: ${id}`);
         let thead = document.createElement("thead");
         thead.id = this.idfmt(id);
         parentEl.appendChild(thead);
-        const getHeaderDepth = (eid) => {
-            if (this._data[eid].children) {
+        // Get header depth
+        const getHeaderDepth = (entityId) => {
+            let current = this._getEntity(entityId);
+            if (!current)
+                return 0;
+            if (current.children) {
                 let max = 0;
-                this._data[eid].children.forEach((childId) => {
+                current.children.forEach((childId) => {
                     let depth = getHeaderDepth(childId) + 1;
                     if (max < depth) {
                         thead.appendChild(document.createElement("tr"));
@@ -232,25 +199,31 @@ export class Table extends ContentEntity {
                 return 0;
             }
         };
-        let depth = getHeaderDepth(id);
-        if (entity.hasOwnProperty("children") && entity.children.length) {
+        this._headerDepth = getHeaderDepth(id);
+        if ("children" in entity && entity.children.length) {
             // TODO: All types of children should be equal. Add checking logic here.
             entity.children.forEach((childId, order) => {
-                let childType = this._data[childId].type;
-                if (childType === "tableColumn")
-                    this._column(childId, thead, depth, 0, order);
+                let child = this._getEntity(childId);
+                if (!child)
+                    return;
+                if (child.type === "tableColumn")
+                    this._column(childId, thead, 0, order);
             });
         }
     }
-    _column(id, parentEl, depth, row, col) {
+    _column(id, parentEl, row, col) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of tableColumn: ${id}`);
         let th = document.createElement("th");
         th.id = this.idfmt(id);
-        th.innerHTML = entity.label;
+        th.innerHTML = entity.content;
         parentEl.children[row].appendChild(th);
-        //if (entity.action) this.setAction(th, id);
+        if ("action" in entity && entity.action) {
+            this._setAction(id, th);
+        }
         if (th.previousElementSibling) {
             if (th.previousElementSibling.hasAttribute("col")) {
                 let column = th.previousElementSibling.getAttribute("col");
@@ -272,13 +245,15 @@ export class Table extends ContentEntity {
             th.classList.add.apply(th.classList, this._classlist[col]);
         }
         this._callback.call(this, th);
-        if (entity.hasOwnProperty("children") && entity.children.length) {
+        if ("children" in entity && entity.children.length) {
             // TODO: All types of children should be equal. Add checking logic here.
             let max = 0;
             entity.children.forEach((childId, order) => {
-                let childType = this._data[childId].type;
-                if (childType === "tableColumn") {
-                    let cols = this._column(childId, parentEl, depth, row + 1, col + order) + 1;
+                let child = this._getEntity(childId);
+                if (!child)
+                    return;
+                if (child.type === "tableColumn") {
+                    let cols = this._column(childId, parentEl, row + 1, col + order) + 1;
                     if (max < cols)
                         max = cols;
                 }
@@ -288,8 +263,8 @@ export class Table extends ContentEntity {
             return max;
         }
         else {
-            if (row < depth - 1)
-                th.setAttribute("rowspan", (depth - row).toString());
+            if (row < this._headerDepth - 1)
+                th.setAttribute("rowspan", (this._headerDepth - row).toString());
             return 1;
         }
     }
@@ -297,14 +272,22 @@ export class Table extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of tableBody: ${id}`);
         let tbody = document.createElement("tbody");
         tbody.id = this.idfmt(id);
         parentEl.appendChild(tbody);
-        const getHeaderDepth = (eid) => {
-            if (this._data[eid].children) {
+        // Get row header depth
+        const getHeaderDepth = (entityId) => {
+            let current = this._getEntity(entityId);
+            if (!current)
+                return 0;
+            if ("children" in current && current.children.length) {
                 let max = 0;
-                this._data[eid].children.forEach((childId) => {
+                current.children.forEach((childId) => {
                     let child = this._getEntity(childId);
+                    if (!child)
+                        return;
                     if (child.type === "tableRowHeader") {
                         let depth = getHeaderDepth(childId) + 1;
                         if (max < depth)
@@ -316,22 +299,26 @@ export class Table extends ContentEntity {
             else
                 return 0;
         };
-        let depth = getHeaderDepth(id);
-        if (entity.hasOwnProperty("children") && entity.children.length) {
+        this._rowHeaderDepth = getHeaderDepth(id);
+        if ("children" in entity && entity.children.length) {
             // TODO: All types of children should be equal. Add checking logic here.
             entity.children.forEach((childId, order) => {
-                let childType = this._data[childId].type;
-                if (childType === "tableRowHeader")
-                    this._rowHeader(childId, tbody, depth, order, 0, false);
-                else if (childType === "tableRow")
+                let child = this._getEntity(childId);
+                if (!child)
+                    return;
+                if (child.type === "tableRowHeader")
+                    this._rowHeader(childId, tbody, order, 0, false);
+                else if (child.type === "tableRow")
                     this._row(childId, tbody, order, 0, false);
             });
         }
     }
-    _rowHeader(id, parentEl, depth, row, col, isFirstChild) {
+    _rowHeader(id, parentEl, row, col, isFirstChild) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of tableRowHeader: ${id}`);
         if (!isFirstChild) {
             let tr = document.createElement("tr");
             parentEl.appendChild(tr);
@@ -339,31 +326,36 @@ export class Table extends ContentEntity {
         }
         let td = document.createElement("td");
         td.id = this.idfmt(id);
-        if (entity.hasOwnProperty("title"))
-            td.setAttribute("title", entity.title);
-        td.innerHTML = entity.label;
+        td.innerHTML = entity.content;
         td.classList.add(this.clsfmt("row-header"));
         parentEl.children[row].appendChild(td);
-        // if (entity.action) this.setAction(td, id);
+        if ("action" in entity && entity.action) {
+            this._setAction(id, td);
+        }
+        if ("help" in entity && entity.help) {
+            td.setAttribute("title", entity.help);
+        }
         td.setAttribute("row", row.toString());
         td.setAttribute("col", col.toString());
         if (this._classlist && col < this._classlist.length) {
             td.classList.add.apply(td.classList, this._classlist[col]);
         }
         this._callback.call(this, td);
-        if (entity.hasOwnProperty("children") && entity.children.length) {
+        if ("children" in entity && entity.children.length) {
             // TODO: All types of children should be equal. Add checking logic here.
             let total = 0;
             entity.children.forEach((childId, order) => {
                 let child = this._getEntity(childId);
+                if (!child)
+                    return;
                 let colspan = 0;
                 if (child.type !== "tableRowHeader") {
-                    colspan = depth - col;
+                    colspan = this._rowHeaderDepth - col;
                     td.setAttribute("colspan", colspan.toString());
                 }
                 let rows = 0;
                 if (child.type === "tableRowHeader")
-                    rows = this._rowHeader(childId, parentEl, depth, row, col + (colspan ? colspan : 1), order === 0);
+                    rows = this._rowHeader(childId, parentEl, row, col + (colspan ? colspan : 1), order === 0);
                 else if (child.type === "tableRow")
                     rows = this._row(childId, parentEl, row, col + (colspan ? colspan : 1), order === 0);
                 else
@@ -382,6 +374,8 @@ export class Table extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of tableRow: ${id}`);
         if (!isFirstChild) {
             let tr = document.createElement("tr");
             tr.id = this.idfmt(id);
@@ -390,6 +384,8 @@ export class Table extends ContentEntity {
         if (entity.hasOwnProperty("children") && entity.children.length) {
             entity.children.forEach((childId, order) => {
                 let child = this._getEntity(childId);
+                if (!child)
+                    return;
                 if (child.type === "tableCell")
                     this._cell(childId, parentEl, row, col + order);
             });
@@ -400,12 +396,18 @@ export class Table extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of tableCell: ${id}`);
         let td = document.createElement("td");
         td.id = this.idfmt(id);
         parentEl.children[row].appendChild(td);
-        if (entity.action)
+        if ("action" in entity && entity.action) {
             this._setAction(id, td);
-        if (entity.hasOwnProperty("highlight") && entity.highlight) {
+        }
+        if ("help" in entity && entity.help) {
+            td.setAttribute("title", entity.help);
+        }
+        if ("highlight" in entity && entity.highlight) {
             let text = entity.content.replace(/\s*\([^)]*\)\s*/g, "");
             td.innerHTML = entity.content.substring(text.length);
             let highlight = document.createElement("strong");
@@ -414,9 +416,6 @@ export class Table extends ContentEntity {
         }
         else
             td.innerHTML = entity.content;
-        if (entity.hasOwnProperty("label") && entity.label.length) {
-            td.setAttribute("title", entity.label);
-        }
         td.setAttribute("row", row.toString());
         td.setAttribute("col", col.toString());
         if (this._classlist && col < this._classlist.length) {
@@ -425,9 +424,10 @@ export class Table extends ContentEntity {
         this._callback.call(this, td);
     }
     _footer(id, parentEl) {
+        // TODO: footer
     }
 }
-export class Spreadsheet extends ContentEntity {
+export class Ledger extends ContentEntity {
     constructor(id, data, callback) {
         super(id, data, callback);
         // Record headers
@@ -444,68 +444,77 @@ export class Spreadsheet extends ContentEntity {
         this._classlist = {};
         let entity = this._getEntity(this._id);
         if (!entity)
-            throw new Error(`Invalid spreadsheet: ${this._id}`);
+            throw new Error(`Invalid identifier of ledger: ${this._id}`);
         // Entity inspection
-        if (entity.hasOwnProperty("content")) {
+        if ("content" in entity) {
             let content = entity.content;
-            if (!content.hasOwnProperty("header"))
+            if (!("header" in content))
                 throw new Error(`Header is necessarily required: ${content.toString()}`);
-            if (!content.hasOwnProperty("body") || !(content.body in this._data))
+            if (!("body" in content))
                 throw new Error(`Body is necessarily required: ${content.toString()}`);
             let header = this._getEntity(content.header);
             if (header) {
-                if (!header.hasOwnProperty("content"))
+                if (!("content" in header))
                     throw new Error(`Incomplete header entity: ${header}`);
                 Object.keys(header.content).forEach((key) => {
-                    this._keys.push(key);
-                    this._types[key] = header.content[key];
+                    if (header) {
+                        this._keys.push(key);
+                        this._types[key] = header.content[key];
+                    }
                 });
             }
             else
-                throw new Error(`Invalid identifier of spreadsheet header: ${content.header}`);
+                throw new Error(`Invalid identifier of ledger header: ${content.header}`);
             let body = this._getEntity(content.body);
             if (body) {
-                if (!body.hasOwnProperty("children"))
+                if (!("children" in body))
                     throw new Error(`Incomplete body entity: ${body}`);
                 body.children.forEach((id) => {
                     this._records.push(id);
                 });
             }
             else
-                throw new Error(`Invalid identifier of spreadsheet body: ${content.body}`);
+                throw new Error(`Invalid identifier of ledger body: ${content.body}`);
         }
         else
             throw new Error(`Incomplete entity: ${entity.toString()}`);
         // Properties
-        if (entity.hasOwnProperty("properties") && entity.properties in this._data) {
-            let properties = this._data[entity.properties].content;
-            if (properties.hasOwnProperty("display")) {
-                this._keys = [];
-                properties.display.forEach((key) => {
-                    this._keys.push(key);
-                });
-            }
-            if (properties.hasOwnProperty("filter")) {
-                this._filter = properties.filter;
-            }
-            if (properties.hasOwnProperty("sort")) {
-                this._sort = properties.sort;
-                let option = [];
-                for (const key of this._keys) {
-                    if (key in this._sort) {
-                        option.push({
-                            key: key,
-                            order: this._sort[key]
-                        });
-                    }
+        if ("properties" in entity) {
+            let propEntity = this._getEntity(entity.properties);
+            if (propEntity) {
+                let properties = propEntity.content;
+                if ("display" in properties) {
+                    this._keys = [];
+                    properties.display.forEach((key) => {
+                        this._keys.push(key);
+                    });
                 }
-                this.sort(option);
+                if ("filter" in properties) {
+                    this._filter = properties.filter;
+                }
+                if ("sort" in properties) {
+                    this._sort = properties.sort;
+                    let option = [];
+                    for (const key of this._keys) {
+                        if (key in this._sort) {
+                            option.push({
+                                key: key,
+                                order: this._sort[key],
+                            });
+                        }
+                    }
+                    this.sort(option);
+                }
             }
         }
         // Classlist
-        this._keys.forEach((key) => { this._classlist[key] = []; });
-        if (entity.hasOwnProperty("classlist") && entity.classlist in this._data) {
-            this._classlist = this._data[entity.classlist].content;
+        this._keys.forEach((key) => {
+            this._classlist[key] = [];
+        });
+        if ("classlist" in entity) {
+            let subEntity = this._getEntity(entity.classlist);
+            if (subEntity)
+                this._classlist = subEntity.content;
         }
         // Mark as visible
         for (let i = 0; i < this._records.length; i++) {
@@ -525,10 +534,14 @@ export class Spreadsheet extends ContentEntity {
             for (let i = 0; i < option.length && compare == 0; i++) {
                 let key = option[i].key;
                 if (key) {
-                    let order = (!option[i].order) ? 0 : (option[i].order === "ascending" ? 1 : -1);
-                    let value1 = this._data[a].content[key];
-                    let value2 = this._data[b].content[key];
-                    compare = (value1 === value2) ? 0 : (value1 > value2 ? 1 : -1) * order;
+                    let order = !option[i].order ? 0 : option[i].order === "ascending" ? 1 : -1;
+                    let entityA = this._getEntity(a);
+                    let entityB = this._getEntity(b);
+                    if (entityA && entityB) {
+                        let valueA = entityA.content[key];
+                        let valueB = entityB.content[key];
+                        compare = valueA === valueB ? 0 : (valueA > valueB ? 1 : -1) * order;
+                    }
                 }
             }
             return compare;
@@ -538,9 +551,11 @@ export class Spreadsheet extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(this._id);
+        if (!entity)
+            return undefined;
         let table = document.createElement("table");
         table.id = this.idfmt(this._id);
-        table.classList.add(this.clsfmt("spreadsheet"));
+        table.classList.add(this.clsfmt("ledger"));
         parentEl.appendChild(table);
         if (entity.content.footer)
             this._footer(entity.content.footer, table);
@@ -548,12 +563,15 @@ export class Spreadsheet extends ContentEntity {
             this._body(entity.content.body, table);
         if (entity.content.header)
             this._header(entity.content.header, table);
+        // TODO: "title" in entity -> caption
         return table;
     }
     _header(id, parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of ledgerHeader: ${id}`);
         let thead = document.createElement("thead");
         thead.id = this.idfmt(id);
         parentEl.appendChild(thead);
@@ -586,7 +604,9 @@ export class Spreadsheet extends ContentEntity {
             combobox.addEventListener("input", (e) => {
                 e.stopPropagation();
                 let el = e.target;
-                let stylesheet = this._getEntity(this._id);
+                let ledger = this._getEntity(this._id);
+                if (!ledger)
+                    return;
                 let table = document.querySelector(`#${this.idfmt(this._id)}`);
                 let tbody = table.querySelector("tbody");
                 let tableRows = tbody.querySelectorAll("tr");
@@ -616,23 +636,30 @@ export class Spreadsheet extends ContentEntity {
                     let regex = new RegExp(`^${this.idfmt("combobox")}`, "gi");
                     el.setAttribute("list", el.id.replace(regex, this.idfmt("datalist")));
                 }
-                if (stylesheet.content.footer) {
+                if (ledger.content.footer) {
                     // Remove all children of `<table><tfoot><tr>`
                     let footerRow = table.querySelector("tfoot > tr");
                     while (footerRow && footerRow.lastChild)
                         footerRow.removeChild(footerRow.lastChild);
                     // Update statistics
-                    this._footer(stylesheet.content.footer, table);
+                    this._footer(ledger.content.footer, table);
                 }
                 // Reset column filter
-                Object.keys(this._values).forEach((key) => { this._values[key] = []; });
+                Object.keys(this._values).forEach((key) => {
+                    this._values[key] = [];
+                });
                 // Hide filtered rows
                 tableRows.forEach((tr, row) => {
-                    if (this._mask[row].reduce((a, b) => { return a * b; })) {
+                    if (this._mask[row].reduce((a, b) => {
+                        return a * b;
+                    })) {
                         tr.classList.remove("hidden");
                         let recordId = this._records[row];
                         this._keys.forEach((key) => {
-                            let filterValue = this._data[recordId].content[key];
+                            let record = this._getEntity(recordId);
+                            if (!record)
+                                return;
+                            let filterValue = record.content[key];
                             if (filterValue && this._values[key].indexOf(filterValue) < 0)
                                 this._values[key].push(filterValue);
                         });
@@ -645,7 +672,7 @@ export class Spreadsheet extends ContentEntity {
                 Object.keys(this._values).forEach((key) => {
                     if (key in this._sort) {
                         this._values[key].sort((a, b) => {
-                            let order = (!this._sort[key]) ? 0 : (this._sort[key] === "ascending" ? 1 : -1);
+                            let order = !this._sort[key] ? 0 : this._sort[key] === "ascending" ? 1 : -1;
                             return a == b ? 0 : (a > b ? 1 : -1) * order;
                         });
                     }
@@ -695,27 +722,37 @@ export class Spreadsheet extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of ledgerBody: ${id}`);
         let tbody = document.createElement("tbody");
         tbody.id = this.idfmt(id);
         tbody.style.setProperty(`--${this.cssvarfmt("RowCounterId")}`, parentEl.id);
         parentEl.appendChild(tbody);
         this._records.forEach((childId, order) => {
-            let entity = this._getEntity(childId);
-            if (entity.type === "spreadsheetRecord")
+            let child = this._getEntity(childId);
+            if (!child)
+                return;
+            if (child.type === "ledgerRecord")
                 this._putRecord(childId, tbody);
         });
         // Sort suggestion list of column filter
         Object.keys(this._values).forEach((key) => {
             if (key in this._sort) {
                 this._values[key].sort((a, b) => {
-                    let order = (!this._sort[key]) ? 0 : (this._sort[key] === "ascending" ? 1 : -1);
+                    let order = !this._sort[key] ? 0 : this._sort[key] === "ascending" ? 1 : -1;
                     return a == b ? 0 : (a > b ? 1 : -1) * order;
                 });
             }
         });
     }
     _putRecord(id, parentEl) {
+        if (!parentEl)
+            throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity) {
+            console.log(`Invalid identifier of ledgerRecord: ${id}`);
+            return;
+        }
         let tr = document.createElement("tr");
         tr.id = this.idfmt(id);
         tr.style.setProperty(`--${this.cssvarfmt("RowCounterId")}`, parentEl.id);
@@ -753,6 +790,8 @@ export class Spreadsheet extends ContentEntity {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
         let entity = this._getEntity(id);
+        if (!entity)
+            throw new Error(`Invalid identifier of ledgerFooter: ${id}`);
         let tfoot = parentEl.querySelector("tfoot");
         if (!tfoot) {
             tfoot = document.createElement("tfoot");
@@ -774,7 +813,11 @@ export class Spreadsheet extends ContentEntity {
                 let result = 0;
                 this._records.forEach((childId, order) => {
                     let child = this._getEntity(childId);
-                    if (this._mask[order].reduce((a, b) => { return a * b; }))
+                    if (!child)
+                        return;
+                    if (this._mask[order].reduce((a, b) => {
+                        return a * b;
+                    }))
                         result += child.content[key];
                 });
                 td.innerHTML = result.toLocaleString();
@@ -783,7 +826,11 @@ export class Spreadsheet extends ContentEntity {
                 let result = [];
                 this._records.forEach((childId, order) => {
                     let child = this._getEntity(childId);
-                    if (this._mask[order].reduce((a, b) => { return a * b; }))
+                    if (!child)
+                        return;
+                    if (this._mask[order].reduce((a, b) => {
+                        return a * b;
+                    }))
                         result.push(child.content[key].toString());
                 });
                 td.innerHTML = [...new Set(Array.from(result))].length.toLocaleString();
@@ -791,7 +838,9 @@ export class Spreadsheet extends ContentEntity {
             else if (type === "count") {
                 let result = 0;
                 this._records.forEach((childId, order) => {
-                    if (this._mask[order].reduce((a, b) => { return a * b; }))
+                    if (this._mask[order].reduce((a, b) => {
+                        return a * b;
+                    }))
                         result += 1;
                 });
                 td.innerHTML = result.toLocaleString();

@@ -1,99 +1,85 @@
-import * as ContentEntity from "./contentEntity.js";
+import { LayoutEntity } from "./layoutEntity.js";
 export class Sectional {
-    constructor(dom, json, callback) {
-        if (!dom || !json)
+    constructor(view, json, options) {
+        this._callback = (e) => { };
+        this._layout = true;
+        if (!view || !json)
             throw new Error("Missing parameters!");
-        this._viewport = dom;
+        this._viewport = view;
         this._data = json;
-        this._callback = typeof callback === "function" ? callback : (e) => { };
-        this._init(Sectional.ENTRY, "", 0);
+        // Set options
+        if (options) {
+            if ("callback" in options && typeof options.callback === "function")
+                this._callback = options.callback;
+            if ("insertLayouts" in options && typeof options.insertLayouts === "boolean")
+                this._layout = options.insertLayouts;
+        }
+        const init = (id, parent, depth) => {
+            if (!id)
+                return;
+            // Metadata
+            let entity = this._data[id];
+            if (!entity)
+                throw new Error(`Invalid entity: ${id}`);
+            entity._id = id;
+            entity._depth = depth;
+            if (parent) {
+                if (!("_parent" in entity))
+                    entity._parent = [];
+                entity._parent.push(parent);
+            }
+            // Iterate through child entities
+            if (entity.children) {
+                entity.children.forEach((childId) => {
+                    init(childId, id, depth + 1);
+                });
+            }
+        };
+        init(Sectional.ENTRY, "", 0);
     }
     static get ENTRY() {
         return "0000000000000000000000";
     }
-    _init(id, parent, depth) {
-        if (!id)
-            return;
-        // Metadata
-        let entity = this._data[id];
-        if (!entity)
-            throw new Error(`Invalid entity: ${id}`);
-        entity._id = id;
-        entity._depth = depth;
-        if (parent) {
-            if (!("_parent" in entity))
-                entity._parent = [];
-            entity._parent.push(parent);
-        }
-        // Iterate through child entities
-        if (entity.children) {
-            entity.children.forEach((childId) => {
-                this._init(childId, id, depth + 1);
-            });
-        }
+    importData(data) {
+        this._data = data;
     }
-    _createEntityInstance(classname, id) {
-        const cls = ContentEntity;
-        if (typeof cls[classname] !== "undefined")
-            return new cls[classname](id, this._data, this._callback);
-        else
-            throw new Error("Class not found: " + classname);
-    }
-    _children(parentEl, children) {
-        if (children) {
-            children.forEach((childId) => {
-                let child = this._data[childId];
-                if (child) {
-                    let childType = child.type.toLowerCase();
-                    if (childType === "article" || childType === "section") {
-                        this[childType](childId, parentEl);
-                    }
-                    else {
-                        let className = childType.replace(/^.{1}/g, (c) => c.toUpperCase());
-                        let entity = this._createEntityInstance(className, childId);
-                        entity.render(parentEl);
-                    }
+    exportData(removeMeta = true) {
+        let deepCopied = JSON.parse(JSON.stringify(this._data));
+        if (removeMeta) {
+            Object.keys(deepCopied).forEach((id) => {
+                let entity = deepCopied[id];
+                for (const key of Object.keys(entity)) {
+                    if (key.startsWith('_'))
+                        delete entity[key];
                 }
             });
         }
+        return deepCopied;
     }
-    getData() {
-        return this._data;
+    getEntity(id) {
+        if (!(id in this._data))
+            return null;
+        return this._data[id];
+    }
+    setEntity(id, record) {
+        if (id in this._data) {
+            return false;
+        }
+        else {
+            this._data[id] = record;
+            return true;
+        }
+    }
+    getArticles() {
+        let entry = this._data[Sectional.ENTRY];
+        if (entry)
+            return entry.children;
+        return [];
     }
     article(id) {
-        if (!id || !(id in this._data))
-            throw new Error("Invalid parameter: article(id: string);");
-        let entity = this._data[id];
-        if (entity && entity.type !== "article")
-            throw new Error(`"Invalid type: ${entity.type}"`);
         this.clearViewport();
-        let article = document.createElement("article");
-        article.id = `stnl-${id}`;
-        this._viewport.appendChild(article);
-        entity._dom = article;
-        if (entity.label) {
-            // TODO: heading level 1
-        }
-        this._children(entity._dom, entity.children);
-    }
-    section(id, parentEl) {
-        if (!id || !parentEl || !(id in this._data))
-            throw new Error("Invalid parameters: section(id: string, parentId: string)");
-        let entity = this._data[id];
-        if (entity && entity.type !== "section")
-            throw new Error(`"Invalid type: ${entity.type}"`);
-        let section = document.createElement("section");
-        parentEl.appendChild(section);
-        entity._dom = section;
-        if (entity.label) {
-            let heading = document.createElement("h" + entity._depth);
-            heading.id = `stnl-${id}`;
-            heading.innerHTML = entity.label;
-            section.appendChild(heading);
-            section.setAttribute("area-label", entity.label);
-            this._callback.call(this, heading);
-        }
-        this._children(entity._dom, entity.children);
+        let entity = new LayoutEntity(id, this._data, this._callback);
+        entity.article(id, this._viewport, this._layout);
     }
     clearViewport() {
         while (this._viewport.lastChild)

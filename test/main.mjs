@@ -11,38 +11,60 @@ let uuid = (quotation = false) => {
 	return quotation ? `"${newUuid}"` : newUuid;
 };
 
-fetch("sample_data.json")
+fetch("data.json")
 	.then(response => {
 		console.log(`"${uuid()}", "${uuid()}", "${uuid()}"`);
 		if (response.ok) return response.json();
 		return {};
 	})
 	.then(json => {
+		let list = document.querySelector("#articles");
 		let view = document.querySelector("#viewport");
-		let sectional = new Sectional(view, json, (el, ...params) => {
-			// Translate markdown syntax
-			let markdown = new Remarkable("commonmark", {});
-			el.innerHTML = markdown.render(el.innerHTML);
-			if (el.children.length === 1) {
-				// In genenral, texts are transformed into <p> element.
-				el.innerHTML = el.innerHTML.replace(/^(\s*<p>)|(<\/p>\s*)$/g, "");
-			} else if (el.children.length > 1) {
-				let div = document.createElement("div");
-				div.innerHTML = el.innerHTML;
-				el.innerHTML = "";
-				el.appendChild(div);
-			}
+		let sectional = new Sectional(view, json, {
+			insertLayouts: true,
+			callback: (el, ...params) => {
+				// Translate markdown syntax
+				let markdown = new Remarkable("commonmark", {});
+				el.innerHTML = markdown.render(el.innerHTML);
+				if (el.children.length === 1) {
+					// In genenral, texts are transformed into <p> element.
+					el.innerHTML = el.innerHTML.replace(/^(\s*<p>)|(<\/p>\s*)$/g, "");
+				} else if (el.children.length > 1) {
+					let div = document.createElement("div");
+					div.innerHTML = el.innerHTML;
+					el.innerHTML = "";
+					el.appendChild(div);
+				}
 
-			// Render math equations
-			renderMathInElement(el, {
-				throwOnError: false,
-				delimiters: [
-					{left: "$$", right: "$$", display: true},
-					{left: "$", right: "$", display: false},
-					{left: "\\(", right: "\\)", display: false},
-					{left: "\\[", right: "\\]", display: true}
-				]
-			});
+				// Render math equations
+				renderMathInElement(el, {
+					throwOnError: false,
+					delimiters: [
+						{ left: "$$", right: "$$", display: true },
+						{ left: "$", right: "$", display: false },
+						{ left: "\\(", right: "\\)", display: false },
+						{ left: "\\[", right: "\\]", display: true }
+					]
+				});
+			}
 		});
-		sectional.article("7cx8uXwwlN3hyyGh7eKnla");
+
+		let articles = sectional.getArticles();
+		articles.forEach(articleId => {
+			let div = document.createElement("div");
+			div.style.setProperty("font-family", "consolas");
+			div.style.setProperty("cursor", "pointer");
+			div.innerHTML = articleId;
+			div.addEventListener("click", e => {
+				sectional.clearViewport();
+				sectional.article(e.target.innerHTML);
+				Array.from(document.querySelector("#articles").children).forEach(child => {
+					child.classList.remove("selected");
+				});
+				e.target.classList.add("selected");
+			});
+			list.appendChild(div);
+		});
+
+		list.firstChild.click();
 	});

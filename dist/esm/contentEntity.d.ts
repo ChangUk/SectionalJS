@@ -1,35 +1,28 @@
-declare type Callback = (el: HTMLElement, ...args: any[]) => void;
-declare type EntityID = string;
-export declare class ContentEntity {
-    protected _id: EntityID;
-    protected _data: Record<EntityID, Record<string, any>>;
-    protected _callback: Callback;
-    constructor(id: EntityID, data: Record<EntityID, any>, callback: Callback);
-    idfmt(id: EntityID): string;
-    clsfmt(clsname: string): string;
-    cssvarfmt(varname: string): string;
-    attrfmt(attrname: string): string;
-    private _propRequired;
-    protected _getEntity(id: EntityID): any;
+import type { EntityID, EntityRecord, Callback } from "./entity.js";
+import { Entity } from "./entity.js";
+export declare class ContentEntity extends Entity {
+    constructor(id: EntityID, data: Record<EntityID, EntityRecord>, callback: Callback);
     protected _setAction(id: EntityID, el: HTMLElement): null | undefined;
-    protected _action(id: EntityID): any;
+    protected _action(id: EntityID): void;
 }
 export declare class Paragraph extends ContentEntity {
-    render(parentEl: HTMLElement): HTMLElement;
+    render(parentEl: HTMLElement): HTMLElement | undefined;
 }
 export declare class Image extends ContentEntity {
-    render(parentEl: HTMLElement): HTMLElement;
+    render(parentEl: HTMLElement): HTMLElement | undefined;
 }
 export declare class Ulist extends ContentEntity {
-    render(parentEl: HTMLElement): HTMLElement;
+    render(parentEl: HTMLElement): HTMLElement | undefined;
 }
 export declare class Olist extends ContentEntity {
-    render(parentEl: HTMLElement): HTMLElement;
+    render(parentEl: HTMLElement): HTMLElement | undefined;
 }
 export declare class Table extends ContentEntity {
+    private _headerDepth;
+    private _rowHeaderDepth;
     private _classlist;
     constructor(id: EntityID, data: Record<EntityID, any>, callback: Callback);
-    render(parentEl: HTMLElement): HTMLTableElement;
+    render(parentEl: HTMLElement): HTMLElement | undefined;
     private _header;
     private _column;
     private _body;
@@ -38,7 +31,7 @@ export declare class Table extends ContentEntity {
     private _cell;
     private _footer;
 }
-export declare class Spreadsheet extends ContentEntity {
+export declare class Ledger extends ContentEntity {
     private _keys;
     private _types;
     private _records;
@@ -49,10 +42,9 @@ export declare class Spreadsheet extends ContentEntity {
     private _classlist;
     constructor(id: EntityID, data: Record<EntityID, any>, callback: Callback);
     sort(option: Array<Record<string, string | null>>): void;
-    render(parentEl: HTMLElement): HTMLTableElement;
+    render(parentEl: HTMLElement): HTMLElement | undefined;
     private _header;
     private _body;
     private _putRecord;
     private _footer;
 }
-export {};
