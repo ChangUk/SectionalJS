@@ -21,8 +21,7 @@ export class ContentEntity extends Entity {
 		});
 		el.setAttribute("action", entity.action);
 		let actionEntity = this._getEntity(entity.action);
-		if (actionEntity && actionEntity.type === "url")
-			el.setAttribute("title", actionEntity.content);
+		if (actionEntity && actionEntity.type === "url") el.setAttribute("title", actionEntity.content);
 	}
 
 	protected _action(id: EntityID) {
@@ -31,38 +30,14 @@ export class ContentEntity extends Entity {
 
 		if (entity.type === "url") {
 			window.open(entity.content);
-		} else {
-			// TODO: Open encrypted file
-			// var xhr = new XMLHttpRequest();
-			// xhr.open("GET", entity.content);
-			// xhr.onreadystatechange = function (e) {
-			// 	if (xhr.readyState === 4 && xhr.status === 200) {
-			// 		try {
-			// 			// var ui8a = new Uint8Array(xhr.response);
-			// 			var decrypted = CryptoJS.AES.decrypt(xhr.responseText, sessionStorage.getItem("passphrase"));
-			// 			var arr = decrypted.hasOwnProperty("words") ? decrypted.words : [];
-			// 			var len = decrypted.hasOwnProperty("sigBytes") ? decrypted.sigBytes : decrypted.length * 4;
-			// 			var ui8a = new Uint8Array(len);
-			// 			var offset = 0;
-			// 			for (var i = 0; i < len; i++) {
-			// 				ui8a[offset++] = arr[i] >> 24;
-			// 				ui8a[offset++] = (arr[i] >> 16) & 0xff;
-			// 				ui8a[offset++] = (arr[i] >> 8) & 0xff;
-			// 				ui8a[offset++] = arr[i] & 0xff;
-			// 			}
-			// 			var blob = new Blob([ui8a], { type: contentType });
-			// 			var blobUrl = URL.createObjectURL(blob);
-			// 			var a = document.createElement("a");
-			// 			a.href = blobUrl;
-			// 			a.target = "_blank";
-			// 			a.click();
-			// 			URL.revokeObjectURL(blobUrl);
-			// 		} catch (e) {
-			// 			alert(e);
-			// 		}
-			// 	}
-			// };
-			// xhr.send();
+		} else if (entity.type === "dataurl") {
+			let header = entity.content.split(",");
+			let mime = header[0].match(/:(.*?);/)[1];
+			let bstr = atob(header[1]);
+			let n = bstr.length;
+			let ui8a = new Uint8Array(n);
+			while (n--) ui8a[n] = bstr.charCodeAt(n);
+			window.open(URL.createObjectURL(new Blob([ui8a], { type: mime })));
 		}
 	}
 }
