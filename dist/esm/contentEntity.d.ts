@@ -11,6 +11,8 @@ export declare class Paragraph extends ContentEntity {
 export declare class Image extends ContentEntity {
     render(parentEl: HTMLElement): HTMLElement | undefined;
 }
+export declare class Code extends ContentEntity {
+}
 export declare class Ulist extends ContentEntity {
     render(parentEl: HTMLElement): HTMLElement | undefined;
 }

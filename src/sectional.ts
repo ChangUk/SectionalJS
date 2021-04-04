@@ -6,8 +6,10 @@ export class Sectional {
 	private _viewport: HTMLElement;
 	private _data: Record<EntityID, EntityRecord>;
 
+	// Options
 	private _callback: Callback = (e) => {};
-	private _layout: Boolean = true;
+	private _insertSections: Boolean = true;
+	private _entry = "0000000000000000000000";
 
 	constructor(view: HTMLElement, json: Record<EntityID, EntityRecord>, options: Record<string, any>) {
 		if (!view || !json) throw new Error("Missing parameters!");
@@ -17,8 +19,10 @@ export class Sectional {
 		// Set options
 		if (options) {
 			if ("callback" in options && typeof options.callback === "function") this._callback = options.callback;
-			if ("insertLayouts" in options && typeof options.insertLayouts === "boolean")
-				this._layout = options.insertLayouts;
+			if ("insertSections" in options && typeof options.insertSections === "boolean")
+				this._insertSections = options.insertSections;
+			if ("entry" in options && typeof options.entry === "string")
+				this._entry = options.entry;
 		}
 
 		const init = (id: EntityID, parent: EntityID, depth: number): void => {
@@ -41,20 +45,20 @@ export class Sectional {
 				});
 			}
 		};
-		init(Sectional.ENTRY, "", 0);
+		init(this._entry, "", 0);
 	}
 
-	public static get ENTRY(): EntityID {
-		return "0000000000000000000000";
+	public getEntry(): EntityID {
+		return this._entry;
 	}
 
 	public importData(data: Record<EntityID, EntityRecord>): void {
 		this._data = data;
 	}
 
-	public exportData(removeMeta: boolean = true) {
+	public exportData(removeMetadata: boolean = true) {
 		let deepCopied = JSON.parse(JSON.stringify(this._data));
-		if (removeMeta) {
+		if (removeMetadata) {
 			Object.keys(deepCopied).forEach((id: EntityID) => {
 				let entity = deepCopied[id];
 				for (const key of Object.keys(entity)) {
@@ -71,24 +75,78 @@ export class Sectional {
 	}
 
 	public setEntity(id: EntityID, record: Record<string, any>): boolean {
-		if (id in this._data) {
-			return false;
-		} else {
+		try {
 			this._data[id] = record;
 			return true;
+		} catch (e) {
+			return false;
 		}
 	}
 
+	public setMetadata(): void {
+		// let reference = (parent: EntityID | null, id: EntityID) => {
+		// 	if (!id || id.length !== 22) return;
+		// 	if (id in this._data) {
+		// 		let entity = this._data[id];
+		// 		if (entity) {
+		// 			// Metadata
+		// 			if (!("_parents" in entity)) entity._parents = new Array<EntityID>();
+		// 			if (!entity._parent.contains(parent)) entity._parents.push(parent);
+		
+		// 			// Necessary properties
+		// 			if (entity.children)
+		// 				entity.children.forEach((childId: EntityID) => { reference(id, childId); });
+		// 			if ("content" in entity && typeof entity.content === "object")
+		// 				Object.keys(entity.content).forEach((key: string) => {
+		// 					if (entity.content)
+		// 					reference(id, entity.content[key]);
+		// 				});
+		
+		// 			// Optional properties
+		// 			if (entity.classlist)
+		// 				reference(id, entity.classlist);
+		// 			if (entity.properties)
+		// 				reference(id, entity.properties);
+		// 			if (entity.action)
+		// 				reference(id, entity.action);
+		// 		}
+		// 	} else console.log(`--- Broken pointer: parent("${parent}") -> target("${id}")"`);
+		// }
+		// reference(null, this._entry);
+	}
+
+	public removeEntity(id: EntityID) {
+		if (id && id in this._data) {
+			let entity = <EntityRecord>this._data[id];
+
+			if (entity) {
+				if (entity.hasOwnProperty("children")) {
+					let children = <Array<EntityID>>entity.children;
+					// TODO: 
+				}
+			}
+
+			delete this._data[id];
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public cleanup(): void {
+		// TODO: 
+	}
+
 	public getArticles(): Array<EntityID> {
-		let entry = this._data[Sectional.ENTRY];
-		if (entry) return entry.children;
+		let rootEntity = this._data[this._entry];
+		if (rootEntity) return rootEntity.children;
 		return [];
 	}
 
 	public article(id: EntityID) {
 		this.clearViewport();
 		let entity = new LayoutEntity(id, this._data, this._callback);
-		entity.article(id, this._viewport, this._layout);
+		entity.article(id, this._viewport, this._insertSections);
 	}
 
 	public clearViewport() {

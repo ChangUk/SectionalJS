@@ -21,7 +21,7 @@ fetch("data.json")
 		let list = document.querySelector("#articles");
 		let view = document.querySelector("#viewport");
 		let sectional = new Sectional(view, json, {
-			insertLayouts: true,
+			insertSections: true,
 			callback: (el, ...params) => {
 				// Translate markdown syntax
 				let markdown = new Remarkable("commonmark", {});
@@ -46,7 +46,8 @@ fetch("data.json")
 						{ left: "\\[", right: "\\]", display: true }
 					]
 				});
-			}
+			},
+			entry: "0000000000000000000000"
 		});
 
 		let articles = sectional.getArticles();

@@ -56,5 +56,6 @@ Entity.TEMPLATE = {
     ledgerBody: { children: [], type: "ledgerBody" },
     ledgerRecord: { content: {}, type: "ledgerRecord" },
     ledgerFooter: { children: {}, type: "ledgerFooter" },
+    code: { content: "", language: "", type: "code" },
 };
 //# sourceMappingURL=entity.js.map

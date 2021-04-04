@@ -31,7 +31,7 @@ export class LayoutEntity extends Entity {
 		else throw new Error("Class not found: " + clsname);
 	}
 
-	public article(id: EntityID, parentEl: HTMLElement, layout: Boolean = true): void {
+	public article(id: EntityID, parentEl: HTMLElement, insertSections: Boolean = true): void {
 		if (!id || !parentEl)
 			throw new Error("Invalid parameters: article(id: string, parentEl: HTMLElement)");
 
@@ -39,7 +39,7 @@ export class LayoutEntity extends Entity {
 		if (!entity) return;
 		if (entity.type !== "article") throw new Error(`Invalid entity type: ${entity.type}`);
 
-		if (layout) {
+		if (insertSections) {
 			let article = document.createElement("article");
 			article.id = this.idfmt(id);
 			parentEl.appendChild(article);
@@ -51,10 +51,10 @@ export class LayoutEntity extends Entity {
 				article.appendChild(heading);
 			}
 		}
-		this._children(layout ? entity._dom : parentEl, entity.children, layout);
+		this._children(insertSections ? entity._dom : parentEl, entity.children, insertSections);
 	}
 
-	public section(id: EntityID, parentEl: HTMLElement, layout: Boolean = true): void {
+	public section(id: EntityID, parentEl: HTMLElement, insertSections: Boolean = true): void {
 		if (!id || !parentEl)
 			throw new Error("Invalid parameters: section(id: string, parentEl: HTMLElement)");
 
@@ -62,7 +62,7 @@ export class LayoutEntity extends Entity {
 		if (!entity) return;
 		if (entity.type !== "section") throw new Error(`Invalid entity type: ${entity.type}`);
 
-		if (layout) {
+		if (insertSections) {
 			let section = document.createElement("section");
 			parentEl.appendChild(section);
 			entity._dom = section;
@@ -83,6 +83,6 @@ export class LayoutEntity extends Entity {
 				this._callback.call(this, heading);
 			}
 		}
-		this._children(layout ? entity._dom : parentEl, entity.children, layout);
+		this._children(insertSections ? entity._dom : parentEl, entity.children, insertSections);
 	}
 }

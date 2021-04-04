@@ -67,6 +67,8 @@ export class Entity {
 		ledgerBody: { children: [], type: "ledgerBody" },
 		ledgerRecord: { content: {}, type: "ledgerRecord" },
 		ledgerFooter: { children: {}, type: "ledgerFooter" },
+
+		code: { content: "", language: "", type: "code" },
 	};
 
 	public static Template(type: string): EntityRecord {

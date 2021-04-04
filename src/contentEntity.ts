@@ -74,6 +74,10 @@ export class Image extends ContentEntity {
 	}
 }
 
+export class Code extends ContentEntity {
+	// TODO: code snippet
+}
+
 export class Ulist extends ContentEntity {
 	public render(parentEl: HTMLElement): HTMLElement | undefined {
 		if (!parentEl) throw new Error(`Invalid "parentEl": ${parentEl}`);

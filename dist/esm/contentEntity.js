@@ -72,6 +72,8 @@ export class Image extends ContentEntity {
         return img;
     }
 }
+export class Code extends ContentEntity {
+}
 export class Ulist extends ContentEntity {
     render(parentEl) {
         if (!parentEl)

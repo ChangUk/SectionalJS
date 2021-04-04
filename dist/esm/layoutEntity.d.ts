@@ -4,6 +4,6 @@ export declare class LayoutEntity extends Entity {
     constructor(id: EntityID, data: Record<EntityID, EntityRecord>, callback: Callback);
     private _children;
     private _createContentEntity;
-    article(id: EntityID, parentEl: HTMLElement, layout?: Boolean): void;
-    section(id: EntityID, parentEl: HTMLElement, layout?: Boolean): void;
+    article(id: EntityID, parentEl: HTMLElement, insertSections?: Boolean): void;
+    section(id: EntityID, parentEl: HTMLElement, insertSections?: Boolean): void;
 }
