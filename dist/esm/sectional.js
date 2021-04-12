@@ -24,19 +24,36 @@ export class Sectional {
             // Metadata
             let entity = this._data[id];
             if (!entity)
-                throw new Error(`Invalid entity: ${id}`);
+                return;
             entity._id = id;
             entity._depth = depth;
             if (parent) {
-                if (!("_parent" in entity))
-                    entity._parent = [];
-                entity._parent.push(parent);
+                if (!("_parents" in entity))
+                    entity._parents = [];
+                entity._parents.push(parent);
             }
-            // Iterate through child entities
-            if (entity.children) {
+            // Iterate
+            if (entity.hasOwnProperty("children")) {
                 entity.children.forEach((childId) => {
                     init(childId, id, depth + 1);
                 });
+            }
+            if (entity.hasOwnProperty("content")) {
+                if (entity.content.hasOwnProperty("header"))
+                    init(entity.content.header, id, depth + 1);
+                if (entity.content.hasOwnProperty("body"))
+                    init(entity.content.body, id, depth + 1);
+                if (entity.content.hasOwnProperty("footer"))
+                    init(entity.content.footer, id, depth + 1);
+            }
+            if (entity.hasOwnProperty("classlist")) {
+                init(entity.classlist, id, depth + 1);
+            }
+            if (entity.hasOwnProperty("properties")) {
+                init(entity.properties, id, depth + 1);
+            }
+            if (entity.hasOwnProperty("action")) {
+                init(entity.action, id, depth + 1);
             }
         };
         init(this._entry, "", 0);
@@ -82,7 +99,7 @@ export class Sectional {
         // 		if (entity) {
         // 			// Metadata
         // 			if (!("_parents" in entity)) entity._parents = new Array<EntityID>();
-        // 			if (!entity._parent.contains(parent)) entity._parents.push(parent);
+        // 			if (!entity._parents.contains(parent)) entity._parents.push(parent);
         // 			// Necessary properties
         // 			if (entity.children)
         // 				entity.children.forEach((childId: EntityID) => { reference(id, childId); });
