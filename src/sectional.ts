@@ -35,7 +35,7 @@ export class Sectional {
 			entity._depth = depth;
 			if (parent) {
 				if (!("_parents" in entity)) entity._parents = <Array<EntityID>>[];
-				entity._parents.push(parent);
+				if (!entity._parents.includes(parent)) entity._parents.push(parent);
 			}
 
 			// Iterate
