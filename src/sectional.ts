@@ -28,7 +28,7 @@ export class Sectional {
 		const init = (id: EntityID, parent: EntityID, depth: number): void => {
 			if (!id) return;
 
-			// Metadata
+			// Set metadata
 			let entity = this._data[id];
 			if (!entity) return;
 			entity._id = id;
@@ -38,7 +38,7 @@ export class Sectional {
 				if (!entity._parents.includes(parent)) entity._parents.push(parent);
 			}
 
-			// Iterate
+			// Necessary properties
 			if (entity.hasOwnProperty("children")) {
 				entity.children.forEach((childId: EntityID) => {
 					init(childId, id, depth + 1);
@@ -52,6 +52,8 @@ export class Sectional {
 				if (entity.content.hasOwnProperty("footer"))
 					init(entity.content.footer, id, depth + 1);
 			}
+
+			// Optional properties
 			if (entity.hasOwnProperty("classlist")) {
 				init(entity.classlist, id, depth + 1);
 			}
