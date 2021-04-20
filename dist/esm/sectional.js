@@ -61,7 +61,10 @@ export class Sectional {
     getEntry() {
         return this._entry;
     }
-    importData(data) {
+    getData() {
+        return this._data;
+    }
+    setData(data) {
         this._data = data;
     }
     exportData(removeMetadata = true) {

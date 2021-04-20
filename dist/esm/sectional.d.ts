@@ -7,7 +7,8 @@ export declare class Sectional {
     private _entry;
     constructor(view: HTMLElement, json: Record<EntityID, EntityRecord>, options: Record<string, any>);
     getEntry(): EntityID;
-    importData(data: Record<EntityID, EntityRecord>): void;
+    getData(): Record<EntityID, EntityRecord>;
+    setData(data: Record<EntityID, EntityRecord>): void;
     exportData(removeMetadata?: boolean): any;
     getEntity(id: EntityID): EntityRecord;
     setEntity(id: EntityID, record: Record<string, any>): boolean;

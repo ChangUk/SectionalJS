@@ -69,7 +69,11 @@ export class Sectional {
 		return this._entry;
 	}
 
-	public importData(data: Record<EntityID, EntityRecord>): void {
+	public getData(): Record<EntityID, EntityRecord> {
+		return this._data;
+	}
+
+	public setData(data: Record<EntityID, EntityRecord>): void {
 		this._data = data;
 	}
 
