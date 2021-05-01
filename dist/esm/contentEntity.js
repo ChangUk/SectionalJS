@@ -1,4 +1,13 @@
 import { Entity } from "./entity.js";
+const Debounce = (fn, wait, immed = false) => {
+    let timeout;
+    return function (...args) {
+        if (!timeout && immed)
+            fn.apply(this, args);
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), wait);
+    };
+};
 export class ContentEntity extends Entity {
     constructor(id, data, callback) {
         super(id, data, callback);
@@ -360,7 +369,7 @@ export class Table extends ContentEntity {
             tr.id = this.idfmt(id);
             parentEl.appendChild(tr);
         }
-        if (entity.hasOwnProperty("children") && entity.children.length) {
+        if ("children" in entity && entity.children.length) {
             entity.children.forEach((childId, order) => {
                 let child = this._getEntity(childId);
                 if (!child)
@@ -580,7 +589,7 @@ export class Ledger extends ContentEntity {
             combobox.addEventListener("keypress", (e) => {
                 e.stopPropagation();
             });
-            combobox.addEventListener("input", (e) => {
+            combobox.addEventListener("input", Debounce((e) => {
                 e.stopPropagation();
                 let el = e.target;
                 let ledger = this._getEntity(this._id);
@@ -599,7 +608,7 @@ export class Ledger extends ContentEntity {
                     el.setAttribute("list", "");
                     tableRows.forEach((tr, row) => {
                         try {
-                            let regex = new RegExp(`${el.value}`, "g");
+                            let regex = new RegExp(`${el.value}`, "gi");
                             let str = tr.childNodes[col].innerText;
                             let matches = str.match(regex);
                             if (!matches || !matches.length)
@@ -670,7 +679,7 @@ export class Ledger extends ContentEntity {
                     });
                 });
                 //el.blur();
-            });
+            }, 500));
             th.appendChild(combobox);
             // Datalist
             let datalist = document.createElement("datalist");

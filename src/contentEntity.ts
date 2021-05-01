@@ -1,6 +1,15 @@
 import type { EntityID, EntityRecord, Callback } from "./entity.js";
 import { Entity } from "./entity.js";
 
+const Debounce = (func: Function, wait: number, immediate: boolean = false) => {
+	let timeout: ReturnType<typeof setTimeout>;
+	return function (this: ThisParameterType<Function>, ...args: any[]) {
+		if (!timeout && immediate) func.apply(this, args);
+		clearTimeout(timeout);
+		timeout = setTimeout(() => func.apply(this, args), wait);
+	};
+};
+
 export class ContentEntity extends Entity {
 	constructor(id: EntityID, data: Record<EntityID, EntityRecord>, callback: Callback) {
 		super(id, data, callback);
@@ -375,7 +384,7 @@ export class Table extends ContentEntity {
 			parentEl.appendChild(tr);
 		}
 
-		if (entity.hasOwnProperty("children") && entity.children.length) {
+		if ("children" in entity && entity.children.length) {
 			entity.children.forEach((childId: string, order: number) => {
 				let child = this._getEntity(childId);
 				if (!child) return;
@@ -601,101 +610,104 @@ export class Ledger extends ContentEntity {
 			combobox.addEventListener("keypress", (e) => {
 				e.stopPropagation();
 			});
-			combobox.addEventListener("input", (e) => {
-				e.stopPropagation();
-				let el = <HTMLInputElement>e.target;
-				let ledger = this._getEntity(this._id);
-				if (!ledger) return;
+			combobox.addEventListener(
+				"input",
+				Debounce((e: Event) => {
+					e.stopPropagation();
+					let el = <HTMLInputElement>e.target;
+					let ledger = this._getEntity(this._id);
+					if (!ledger) return;
 
-				let table = <HTMLTableElement>document.querySelector(`#${this.idfmt(this._id)}`);
-				let tbody = table.querySelector("tbody");
-				let tableRows = (<HTMLTableSectionElement>tbody).querySelectorAll("tr");
-				let col = parseInt(<string>el.getAttribute("col"));
+					let table = <HTMLTableElement>document.querySelector(`#${this.idfmt(this._id)}`);
+					let tbody = table.querySelector("tbody");
+					let tableRows = (<HTMLTableSectionElement>tbody).querySelectorAll("tr");
+					let col = parseInt(<string>el.getAttribute("col"));
 
-				// Reset masking
-				tableRows.forEach((tr: HTMLTableRowElement, row: number) => {
-					this._mask[row][col] = 1;
-				});
-
-				// Masking
-				if (el.value.length) {
-					el.setAttribute("list", "");
+					// Reset masking
 					tableRows.forEach((tr: HTMLTableRowElement, row: number) => {
-						try {
-							let regex = new RegExp(`${el.value}`, "g");
-							let str = (<HTMLTableDataCellElement>tr.childNodes[col]).innerText;
-							let matches = str.match(regex);
-							if (!matches || !matches.length) this._mask[row][col] = 0;
-						} catch (e) {}
-
-						// Exact match
-						// if ((<HTMLTableDataCellElement>tr.childNodes[col]).innerText !== el.value)
-						// 	this._mask[row][col] = 0;
+						this._mask[row][col] = 1;
 					});
-				} else {
-					let regex = new RegExp(`^${this.idfmt("combobox")}`, "gi");
-					el.setAttribute("list", el.id.replace(regex, this.idfmt("datalist")));
-				}
 
-				if (ledger.content.footer) {
-					// Remove all children of `<table><tfoot><tr>`
-					let footerRow = <HTMLTableRowElement>table.querySelector("tfoot > tr");
-					while (footerRow && footerRow.lastChild) footerRow.removeChild(footerRow.lastChild);
+					// Masking
+					if (el.value.length) {
+						el.setAttribute("list", "");
+						tableRows.forEach((tr: HTMLTableRowElement, row: number) => {
+							try {
+								let regex = new RegExp(`${el.value}`, "gi");
+								let str = (<HTMLTableDataCellElement>tr.childNodes[col]).innerText;
+								let matches = str.match(regex);
+								if (!matches || !matches.length) this._mask[row][col] = 0;
+							} catch (e) {}
 
-					// Update statistics
-					this._footer(ledger.content.footer, table);
-				}
-
-				// Reset column filter
-				Object.keys(this._values).forEach((key: ColumnKey) => {
-					this._values[key] = [];
-				});
-
-				// Hide filtered rows
-				tableRows.forEach((tr, row) => {
-					if (
-						this._mask[row].reduce((a, b) => {
-							return a * b;
-						})
-					) {
-						tr.classList.remove("hidden");
-						let recordId = this._records[row];
-						this._keys.forEach((key: ColumnKey) => {
-							let record = this._getEntity(recordId);
-							if (!record) return;
-							let filterValue = record.content[key];
-							if (filterValue && this._values[key].indexOf(filterValue) < 0) this._values[key].push(filterValue);
+							// Exact match
+							// if ((<HTMLTableDataCellElement>tr.childNodes[col]).innerText !== el.value)
+							// 	this._mask[row][col] = 0;
 						});
 					} else {
-						tr.classList.add("hidden");
+						let regex = new RegExp(`^${this.idfmt("combobox")}`, "gi");
+						el.setAttribute("list", el.id.replace(regex, this.idfmt("datalist")));
 					}
-				});
 
-				// Sort suggestion list of column filter
-				Object.keys(this._values).forEach((key) => {
-					if (key in this._sort) {
-						this._values[key].sort((a, b) => {
-							let order = !this._sort[key] ? 0 : this._sort[key] === "ascending" ? 1 : -1;
-							return a == b ? 0 : (a > b ? 1 : -1) * order;
-						});
+					if (ledger.content.footer) {
+						// Remove all children of `<table><tfoot><tr>`
+						let footerRow = <HTMLTableRowElement>table.querySelector("tfoot > tr");
+						while (footerRow && footerRow.lastChild) footerRow.removeChild(footerRow.lastChild);
+
+						// Update statistics
+						this._footer(ledger.content.footer, table);
 					}
-				});
 
-				// Add options to datalist
-				this._keys.forEach((key: ColumnKey, order: number) => {
-					let datalistId = this.idfmt(`datalist-${this._id}-${key}`);
-					let datalist = <HTMLDataListElement>document.querySelector(`#${datalistId}`);
-					while (datalist && datalist.lastChild) datalist.removeChild(datalist.lastChild);
-					this._values[key].forEach((value) => {
-						let option = document.createElement("option");
-						option.value = value;
-						option.innerHTML = value;
-						datalist.appendChild(option);
+					// Reset column filter
+					Object.keys(this._values).forEach((key: ColumnKey) => {
+						this._values[key] = [];
 					});
-				});
 
-				//el.blur();
-			});
+					// Hide filtered rows
+					tableRows.forEach((tr, row) => {
+						if (
+							this._mask[row].reduce((a, b) => {
+								return a * b;
+							})
+						) {
+							tr.classList.remove("hidden");
+							let recordId = this._records[row];
+							this._keys.forEach((key: ColumnKey) => {
+								let record = this._getEntity(recordId);
+								if (!record) return;
+								let filterValue = record.content[key];
+								if (filterValue && this._values[key].indexOf(filterValue) < 0) this._values[key].push(filterValue);
+							});
+						} else {
+							tr.classList.add("hidden");
+						}
+					});
+
+					// Sort suggestion list of column filter
+					Object.keys(this._values).forEach((key) => {
+						if (key in this._sort) {
+							this._values[key].sort((a, b) => {
+								let order = !this._sort[key] ? 0 : this._sort[key] === "ascending" ? 1 : -1;
+								return a == b ? 0 : (a > b ? 1 : -1) * order;
+							});
+						}
+					});
+
+					// Add options to datalist
+					this._keys.forEach((key: ColumnKey, order: number) => {
+						let datalistId = this.idfmt(`datalist-${this._id}-${key}`);
+						let datalist = <HTMLDataListElement>document.querySelector(`#${datalistId}`);
+						while (datalist && datalist.lastChild) datalist.removeChild(datalist.lastChild);
+						this._values[key].forEach((value) => {
+							let option = document.createElement("option");
+							option.value = value;
+							option.innerHTML = value;
+							datalist.appendChild(option);
+						});
+					});
+
+					//el.blur();
+				}, 500)
+			);
 			th.appendChild(combobox);
 
 			// Datalist

@@ -21,7 +21,7 @@ export class Sectional {
         const init = (id, parent, depth) => {
             if (!id)
                 return;
-            // Metadata
+            // Set metadata
             let entity = this._data[id];
             if (!entity)
                 return;
@@ -33,27 +33,28 @@ export class Sectional {
                 if (!entity._parents.includes(parent))
                     entity._parents.push(parent);
             }
-            // Iterate
-            if (entity.hasOwnProperty("children")) {
+            // Necessary properties
+            if ("children" in entity) {
                 entity.children.forEach((childId) => {
                     init(childId, id, depth + 1);
                 });
             }
-            if (entity.hasOwnProperty("content")) {
-                if (entity.content.hasOwnProperty("header"))
+            if ("content" in entity && typeof entity.content === "object") {
+                if ("header" in entity.content)
                     init(entity.content.header, id, depth + 1);
-                if (entity.content.hasOwnProperty("body"))
+                if ("body" in entity.content)
                     init(entity.content.body, id, depth + 1);
-                if (entity.content.hasOwnProperty("footer"))
+                if ("footer" in entity.content)
                     init(entity.content.footer, id, depth + 1);
             }
-            if (entity.hasOwnProperty("classlist")) {
+            // Optional properties
+            if ("classlist" in entity) {
                 init(entity.classlist, id, depth + 1);
             }
-            if (entity.hasOwnProperty("properties")) {
+            if ("properties" in entity) {
                 init(entity.properties, id, depth + 1);
             }
-            if (entity.hasOwnProperty("action")) {
+            if ("action" in entity) {
                 init(entity.action, id, depth + 1);
             }
         };
@@ -128,7 +129,7 @@ export class Sectional {
         if (id && id in this._data) {
             let entity = this._data[id];
             if (entity) {
-                if (entity.hasOwnProperty("children")) {
+                if ("children" in entity) {
                     let children = entity.children;
                     // TODO: 
                 }

@@ -39,28 +39,28 @@ export class Sectional {
 			}
 
 			// Necessary properties
-			if (entity.hasOwnProperty("children")) {
+			if ("children" in entity) {
 				entity.children.forEach((childId: EntityID) => {
 					init(childId, id, depth + 1);
 				});
 			}
-			if (entity.hasOwnProperty("content")) {
-				if (entity.content.hasOwnProperty("header"))
+			if ("content" in entity && typeof entity.content === "object") {
+				if ("header" in entity.content)
 					init(entity.content.header, id, depth + 1);
-				if (entity.content.hasOwnProperty("body"))
+				if ("body" in entity.content)
 					init(entity.content.body, id, depth + 1);
-				if (entity.content.hasOwnProperty("footer"))
+				if ("footer" in entity.content)
 					init(entity.content.footer, id, depth + 1);
 			}
 
 			// Optional properties
-			if (entity.hasOwnProperty("classlist")) {
+			if ("classlist" in entity) {
 				init(entity.classlist, id, depth + 1);
 			}
-			if (entity.hasOwnProperty("properties")) {
+			if ("properties" in entity) {
 				init(entity.properties, id, depth + 1);
 			}
-			if (entity.hasOwnProperty("action")) {
+			if ("action" in entity) {
 				init(entity.action, id, depth + 1);
 			}
 		};
@@ -143,7 +143,7 @@ export class Sectional {
 			let entity = <EntityRecord>this._data[id];
 
 			if (entity) {
-				if (entity.hasOwnProperty("children")) {
+				if ("children" in entity) {
 					let children = <Array<EntityID>>entity.children;
 					// TODO: 
 				}
