@@ -84,7 +84,22 @@ export class Image extends ContentEntity {
 }
 
 export class Code extends ContentEntity {
-	// TODO: code snippet
+	public render(parentEl: HTMLElement): HTMLElement | undefined {
+		if (!parentEl) throw new Error(`Invalid "parentEl": ${parentEl}`);
+		let entity = this._getEntity(this._id);
+		if (!entity) return undefined;
+
+		let pre = document.createElement("pre");
+		pre.id = this.idfmt(this._id);
+		parentEl.appendChild(pre);
+
+		let code = document.createElement("code");
+		code.className = `language-${entity.language}`;
+		code.innerHTML = entity.content;
+		pre.appendChild(code);
+		this._callback.call(this, pre);
+		return pre;
+	}
 }
 
 export class Ulist extends ContentEntity {

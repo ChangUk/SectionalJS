@@ -1,11 +1,11 @@
 import { Entity } from "./entity.js";
-const Debounce = (fn, wait, immed = false) => {
+const Debounce = (func, wait, immediate = false) => {
     let timeout;
     return function (...args) {
-        if (!timeout && immed)
-            fn.apply(this, args);
+        if (!timeout && immediate)
+            func.apply(this, args);
         clearTimeout(timeout);
-        timeout = setTimeout(() => fn.apply(this, args), wait);
+        timeout = setTimeout(() => func.apply(this, args), wait);
     };
 };
 export class ContentEntity extends Entity {
@@ -82,6 +82,22 @@ export class Image extends ContentEntity {
     }
 }
 export class Code extends ContentEntity {
+    render(parentEl) {
+        if (!parentEl)
+            throw new Error(`Invalid "parentEl": ${parentEl}`);
+        let entity = this._getEntity(this._id);
+        if (!entity)
+            return undefined;
+        let pre = document.createElement("pre");
+        pre.id = this.idfmt(this._id);
+        parentEl.appendChild(pre);
+        let code = document.createElement("code");
+        code.className = `language-${entity.language}`;
+        code.innerHTML = entity.content;
+        pre.appendChild(code);
+        this._callback.call(this, pre);
+        return pre;
+    }
 }
 export class Ulist extends ContentEntity {
     render(parentEl) {

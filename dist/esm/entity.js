@@ -44,6 +44,7 @@ Entity.TEMPLATE = {
     article: { children: [], title: "", type: "article" },
     section: { children: [], title: "", type: "section" },
     paragraph: { content: "", title: "", type: "paragraph" },
+    code: { content: "", language: "", type: "code" },
     table: { classlist: "", content: { header: "", body: "", footer: "" }, properties: "", title: "", type: "table" },
     tableHeader: { children: [], type: "tableHeader" },
     tableColumn: { content: "", type: "tableColumn" },
@@ -55,7 +56,6 @@ Entity.TEMPLATE = {
     ledgerHeader: { content: {}, type: "ledgerHeader" },
     ledgerBody: { children: [], type: "ledgerBody" },
     ledgerRecord: { content: {}, type: "ledgerRecord" },
-    ledgerFooter: { children: {}, type: "ledgerFooter" },
-    code: { content: "", language: "", type: "code" },
+    ledgerFooter: { children: [], type: "ledgerFooter" },
 };
 //# sourceMappingURL=entity.js.map

@@ -23,29 +23,40 @@ fetch("data.json")
 		let sectional = new Sectional(view, json, {
 			insertSections: true,
 			callback: (el, ...params) => {
-				// Translate markdown syntax
-				let markdown = new Remarkable("commonmark", {});
-				el.innerHTML = markdown.render(el.innerHTML);
-				if (el.children.length === 1) {
-					// In genenral, texts are transformed into <p> element.
-					el.innerHTML = el.innerHTML.replace(/^(\s*<p>)|(<\/p>\s*)$/g, "");
-				} else if (el.children.length > 1) {
-					let div = document.createElement("div");
-					div.innerHTML = el.innerHTML;
-					el.innerHTML = "";
-					el.appendChild(div);
+				if (el.tagName === "PRE") {
+					el.classList.add("hljs");
+					el.querySelectorAll("code").forEach(function (code) {
+						if (code.classList.length) {
+							const worker = new Worker("/assets/lib/highlight/10.7.2/worker.js");
+							worker.onmessage = (e) => { code.innerHTML = e.data; }
+							worker.postMessage(code.textContent);
+						}
+					});
+				} else {
+					// Translate markdown syntax
+					let markdown = new Remarkable("commonmark", {});
+					el.innerHTML = markdown.render(el.innerHTML);
+					if (el.children.length === 1) {
+						// In genenral, texts are transformed into <p> element.
+						el.innerHTML = el.innerHTML.replace(/^(\s*<p>)|(<\/p>\s*)$/g, "");
+					} else if (el.children.length > 1) {
+						let div = document.createElement("div");
+						div.innerHTML = el.innerHTML;
+						el.innerHTML = "";
+						el.appendChild(div);
+					}
+	
+					// Render math equations
+					renderMathInElement(el, {
+						throwOnError: false,
+						delimiters: [
+							{ left: "$$", right: "$$", display: true },
+							{ left: "$", right: "$", display: false },
+							{ left: "\\(", right: "\\)", display: false },
+							{ left: "\\[", right: "\\]", display: true }
+						]
+					});
 				}
-
-				// Render math equations
-				renderMathInElement(el, {
-					throwOnError: false,
-					delimiters: [
-						{ left: "$$", right: "$$", display: true },
-						{ left: "$", right: "$", display: false },
-						{ left: "\\(", right: "\\)", display: false },
-						{ left: "\\[", right: "\\]", display: true }
-					]
-				});
 			},
 			entry: "0000000000000000000000"
 		});

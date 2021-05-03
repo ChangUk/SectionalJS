@@ -54,6 +54,8 @@ export class Entity {
 
 		paragraph: { content: "", title: "", type: "paragraph" },
 
+		code: { content: "", language: "", type: "code" },
+
 		table: { classlist: "", content: { header: "", body: "", footer: "" }, properties: "", title: "", type: "table" },
 		tableHeader: { children: [], type: "tableHeader" },
 		tableColumn: { content: "", type: "tableColumn" },
@@ -66,9 +68,7 @@ export class Entity {
 		ledgerHeader: { content: {}, type: "ledgerHeader" },
 		ledgerBody: { children: [], type: "ledgerBody" },
 		ledgerRecord: { content: {}, type: "ledgerRecord" },
-		ledgerFooter: { children: {}, type: "ledgerFooter" },
-
-		code: { content: "", language: "", type: "code" },
+		ledgerFooter: { children: [], type: "ledgerFooter" },
 	};
 
 	public static Template(type: string): EntityRecord {
