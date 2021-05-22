@@ -20,8 +20,5 @@
   "bugs": {
     "url": "https://github.com/ChangUk/SectionalJS/issues"
   },
-  "homepage": "https://github.com/ChangUk/SectionalJS#readme",
-  "dependencies": {
-    "rollup": "latest"
-  }
+  "homepage": "https://github.com/ChangUk/SectionalJS#readme"
 }
