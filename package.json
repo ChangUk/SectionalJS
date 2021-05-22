@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p tsconfig.json && @powershell Copy-Item -Path \"dist/esm/*\" -Destination \"test/lib/sectional-esm\" -Recurse"
+    "build": "tsc -p tsconfig.json && @powershell Copy-Item -Path \"dist/esm/*\" -Destination \"test/lib/sectional-esm\" -Recurse && rollup test/lib/sectional-esm/sectional.js --file test/lib/sectional-js/sectional.js --format umd --name \"Sectional\""
   },
   "repository": {
     "type": "git",
