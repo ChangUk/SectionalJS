@@ -1,19 +1,10 @@
-import { ShortUuidV4 } from "./lib/short-uuidv4/short-uuidv4.js";
 import renderMathInElement from "./lib/katex/contrib/auto-render.js";
-import { Sectional } from "../dist/esm/sectional.js";
+import { Sectional } from "./lib/sectional-esm/sectional.js";
 import { Remarkable } from "./lib/remarkable/remarkable.js";
 
 // Initialization
-console.clear();
-
-let uuid = (quotation = false) => {
-	let newUuid = new ShortUuidV4().new();
-	return quotation ? `"${newUuid}"` : newUuid;
-};
-
 fetch("data.json")
 	.then(response => {
-		console.log(`"${uuid()}", "${uuid()}", "${uuid()}"`);
 		if (response.ok) return response.json();
 		return {};
 	})

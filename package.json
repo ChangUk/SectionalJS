@@ -1,0 +1,24 @@
+{
+  "name": "sectionaljs",
+  "version": "1.0.0",
+  "description": "**Sectional.js** provide simple document sectioning methodology.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p tsconfig.json && @powershell Copy-Item -Path \"dist/esm/*\" -Destination \"test/lib/sectional-esm\" -Recurse"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChangUk/SectionalJS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ChangUk/SectionalJS/issues"
+  },
+  "homepage": "https://github.com/ChangUk/SectionalJS#readme"
+}
