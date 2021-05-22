@@ -1,4 +1,64 @@
-import { Entity } from "./entity.js";
+class Entity {
+    constructor(id, data, callback) {
+        if (!id || !data || !(id in data))
+            throw new Error(`Invalid parameters: ${id}, ${data}`);
+        this._id = id;
+        this._data = data;
+        this._callback = typeof callback === "function" ? callback : (e) => { };
+    }
+    idfmt(id) {
+        return `stnl-${id}`;
+    }
+    clsfmt(clsname) {
+        return `stnl-${clsname}`;
+    }
+    cssvarfmt(varname) {
+        return `stnl${varname}`;
+    }
+    attrfmt(attrname) {
+        return `stnl-${attrname}`;
+    }
+    _getData() {
+        return this._data;
+    }
+    _getEntity(id) {
+        if (!id)
+            return null;
+        if (id in this._data) {
+            let entity = this._data[id];
+            // TODO: minimum requirements test
+            return entity;
+        }
+        //throw new Error(`Invalid entity ID: ${id}`);
+        return null;
+    }
+    static Template(type) {
+        if (type in Entity.TEMPLATE)
+            return Entity.TEMPLATE[type];
+        else
+            return null;
+    }
+}
+Entity.TEMPLATE = {
+    entry: { children: [], title: "", type: "entry" },
+    article: { children: [], title: "", type: "article" },
+    section: { children: [], title: "", type: "section" },
+    paragraph: { content: "", title: "", type: "paragraph" },
+    code: { content: "", language: "", type: "code" },
+    table: { classlist: "", content: { header: "", body: "", footer: "" }, properties: "", title: "", type: "table" },
+    tableHeader: { children: [], type: "tableHeader" },
+    tableColumn: { content: "", type: "tableColumn" },
+    tableBody: { children: [], type: "tableBody" },
+    tableRowHeader: { children: [], content: "", type: "tableRowHeader" },
+    tableRow: { children: [], type: "tableRow" },
+    tableCell: { content: "", type: "tableCell" },
+    ledger: { classlist: "", content: { header: "", body: "", footer: "" }, properties: "", title: "", type: "ledger" },
+    ledgerHeader: { content: {}, type: "ledgerHeader" },
+    ledgerBody: { children: [], type: "ledgerBody" },
+    ledgerRecord: { content: {}, type: "ledgerRecord" },
+    ledgerFooter: { children: [], type: "ledgerFooter" },
+};
+
 const Debounce = (func, wait, immediate = false) => {
     let timeout;
     return function (...args) {
@@ -8,7 +68,7 @@ const Debounce = (func, wait, immediate = false) => {
         timeout = setTimeout(() => func.apply(this, args), wait);
     };
 };
-export class ContentEntity extends Entity {
+class ContentEntity extends Entity {
     constructor(id, data, callback) {
         super(id, data, callback);
     }
@@ -51,7 +111,7 @@ export class ContentEntity extends Entity {
         }
     }
 }
-export class Paragraph extends ContentEntity {
+class Paragraph extends ContentEntity {
     render(parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
@@ -66,7 +126,7 @@ export class Paragraph extends ContentEntity {
         return p;
     }
 }
-export class Image extends ContentEntity {
+class Image extends ContentEntity {
     render(parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
@@ -81,7 +141,7 @@ export class Image extends ContentEntity {
         return img;
     }
 }
-export class Code extends ContentEntity {
+class Code extends ContentEntity {
     render(parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
@@ -99,7 +159,7 @@ export class Code extends ContentEntity {
         return pre;
     }
 }
-export class Ulist extends ContentEntity {
+class Ulist extends ContentEntity {
     render(parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
@@ -111,7 +171,7 @@ export class Ulist extends ContentEntity {
         return ul;
     }
 }
-export class Olist extends ContentEntity {
+class Olist extends ContentEntity {
     render(parentEl) {
         if (!parentEl)
             throw new Error(`Invalid "parentEl": ${parentEl}`);
@@ -123,7 +183,7 @@ export class Olist extends ContentEntity {
         return ol;
     }
 }
-export class Table extends ContentEntity {
+class Table extends ContentEntity {
     constructor(id, data, callback) {
         super(id, data, callback);
         this._headerDepth = 0;
@@ -144,7 +204,7 @@ export class Table extends ContentEntity {
         if ("properties" in entity) {
             let subEntity = this._getEntity(entity.properties);
             if (subEntity) {
-                let properties = subEntity.content;
+                subEntity.content;
                 // TODO: properties (not defined yet)
             }
         }
@@ -431,7 +491,7 @@ export class Table extends ContentEntity {
         // TODO: footer
     }
 }
-export class Ledger extends ContentEntity {
+class Ledger extends ContentEntity {
     constructor(id, data, callback) {
         super(id, data, callback);
         // Record headers
@@ -852,4 +912,264 @@ export class Ledger extends ContentEntity {
         }
     }
 }
-//# sourceMappingURL=contentEntity.js.map
+
+var ContentEntities = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    ContentEntity: ContentEntity,
+    Paragraph: Paragraph,
+    Image: Image,
+    Code: Code,
+    Ulist: Ulist,
+    Olist: Olist,
+    Table: Table,
+    Ledger: Ledger
+});
+
+class LayoutEntity extends Entity {
+    constructor(id, data, callback) {
+        super(id, data, callback);
+    }
+    _children(parentEl, children, layout) {
+        if (!children)
+            return;
+        children.forEach((childId) => {
+            let child = this._getEntity(childId);
+            if (child) {
+                let childType = child.type.toLowerCase();
+                if (childType === "section") {
+                    this.section(childId, parentEl, layout);
+                }
+                else {
+                    let className = childType.replace(/^.{1}/g, (c) => c.toUpperCase());
+                    let entity = this._createContentEntity(className, childId);
+                    entity.render(parentEl);
+                }
+            }
+        });
+    }
+    _createContentEntity(clsname, id) {
+        const cls = ContentEntities;
+        if (cls[clsname] && typeof cls[clsname] !== "undefined")
+            return new cls[clsname](id, this._getData(), this._callback);
+        else
+            throw new Error("Class not found: " + clsname);
+    }
+    article(id, parentEl, insertSections = true) {
+        if (!id || !parentEl)
+            throw new Error("Invalid parameters: article(id: string, parentEl: HTMLElement)");
+        let entity = this._getEntity(id);
+        if (!entity)
+            return;
+        if (entity.type !== "article")
+            throw new Error(`Invalid entity type: ${entity.type}`);
+        if (insertSections) {
+            let article = document.createElement("article");
+            article.id = this.idfmt(id);
+            parentEl.appendChild(article);
+            entity._dom = article;
+            if (entity.title) {
+                let heading = document.createElement("h1");
+                heading.id = this.idfmt(id);
+                heading.innerHTML = entity.title;
+                article.appendChild(heading);
+            }
+        }
+        this._children(insertSections ? entity._dom : parentEl, entity.children, insertSections);
+    }
+    section(id, parentEl, insertSections = true) {
+        if (!id || !parentEl)
+            throw new Error("Invalid parameters: section(id: string, parentEl: HTMLElement)");
+        let entity = this._getEntity(id);
+        if (!entity)
+            return;
+        if (entity.type !== "section")
+            throw new Error(`Invalid entity type: ${entity.type}`);
+        if (insertSections) {
+            let section = document.createElement("section");
+            parentEl.appendChild(section);
+            entity._dom = section;
+            if (entity.title) {
+                let heading = document.createElement("h" + entity._depth);
+                heading.id = this.idfmt(id);
+                heading.innerHTML = entity.title;
+                section.appendChild(heading);
+                section.setAttribute("area-label", entity.title);
+                this._callback.call(this, heading);
+            }
+        }
+        else {
+            if (entity.title) {
+                let heading = document.createElement("h" + entity._depth);
+                heading.id = this.idfmt(id);
+                heading.innerHTML = entity.title;
+                parentEl.appendChild(heading);
+                this._callback.call(this, heading);
+            }
+        }
+        this._children(insertSections ? entity._dom : parentEl, entity.children, insertSections);
+    }
+}
+
+class Sectional {
+    constructor(view, json, options) {
+        // Options
+        this._callback = (e) => { };
+        this._insertSections = true;
+        this._entry = "0000000000000000000000";
+        if (!view || !json)
+            throw new Error("Missing parameters!");
+        this._viewport = view;
+        this._data = json;
+        // Set options
+        if (options) {
+            if ("callback" in options && typeof options.callback === "function")
+                this._callback = options.callback;
+            if ("insertSections" in options && typeof options.insertSections === "boolean")
+                this._insertSections = options.insertSections;
+            if ("entry" in options && typeof options.entry === "string")
+                this._entry = options.entry;
+        }
+        const init = (id, parent, depth) => {
+            if (!id)
+                return;
+            // Set metadata
+            let entity = this._data[id];
+            if (!entity)
+                return;
+            entity._id = id;
+            entity._depth = depth;
+            if (parent) {
+                if (!("_parents" in entity))
+                    entity._parents = [];
+                if (!entity._parents.includes(parent))
+                    entity._parents.push(parent);
+            }
+            // Necessary properties
+            if ("children" in entity) {
+                entity.children.forEach((childId) => {
+                    init(childId, id, depth + 1);
+                });
+            }
+            if ("content" in entity && typeof entity.content === "object") {
+                if ("header" in entity.content)
+                    init(entity.content.header, id, depth + 1);
+                if ("body" in entity.content)
+                    init(entity.content.body, id, depth + 1);
+                if ("footer" in entity.content)
+                    init(entity.content.footer, id, depth + 1);
+            }
+            // Optional properties
+            if ("classlist" in entity) {
+                init(entity.classlist, id, depth + 1);
+            }
+            if ("properties" in entity) {
+                init(entity.properties, id, depth + 1);
+            }
+            if ("action" in entity) {
+                init(entity.action, id, depth + 1);
+            }
+        };
+        init(this._entry, "", 0);
+    }
+    getEntry() {
+        return this._entry;
+    }
+    getData() {
+        return this._data;
+    }
+    setData(data) {
+        this._data = data;
+    }
+    exportData(removeMetadata = true) {
+        let deepCopied = JSON.parse(JSON.stringify(this._data));
+        if (removeMetadata) {
+            Object.keys(deepCopied).forEach((id) => {
+                let entity = deepCopied[id];
+                for (const key of Object.keys(entity)) {
+                    if (key.startsWith('_'))
+                        delete entity[key];
+                }
+            });
+        }
+        return deepCopied;
+    }
+    getEntity(id) {
+        if (!(id in this._data))
+            return null;
+        return this._data[id];
+    }
+    setEntity(id, record) {
+        try {
+            this._data[id] = record;
+            return true;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+    setMetadata() {
+        // let reference = (parent: EntityID | null, id: EntityID) => {
+        // 	if (!id || id.length !== 22) return;
+        // 	if (id in this._data) {
+        // 		let entity = this._data[id];
+        // 		if (entity) {
+        // 			// Metadata
+        // 			if (!("_parents" in entity)) entity._parents = new Array<EntityID>();
+        // 			if (!entity._parents.contains(parent)) entity._parents.push(parent);
+        // 			// Necessary properties
+        // 			if (entity.children)
+        // 				entity.children.forEach((childId: EntityID) => { reference(id, childId); });
+        // 			if ("content" in entity && typeof entity.content === "object")
+        // 				Object.keys(entity.content).forEach((key: string) => {
+        // 					if (entity.content)
+        // 					reference(id, entity.content[key]);
+        // 				});
+        // 			// Optional properties
+        // 			if (entity.classlist)
+        // 				reference(id, entity.classlist);
+        // 			if (entity.properties)
+        // 				reference(id, entity.properties);
+        // 			if (entity.action)
+        // 				reference(id, entity.action);
+        // 		}
+        // 	} else console.log(`--- Broken pointer: parent("${parent}") -> target("${id}")"`);
+        // }
+        // reference(null, this._entry);
+    }
+    removeEntity(id) {
+        if (id && id in this._data) {
+            let entity = this._data[id];
+            if (entity) {
+                if ("children" in entity) {
+                    entity.children;
+                    // TODO: 
+                }
+            }
+            delete this._data[id];
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    cleanup() {
+        // TODO: 
+    }
+    getArticles() {
+        let rootEntity = this._data[this._entry];
+        if (rootEntity)
+            return rootEntity.children;
+        return [];
+    }
+    article(id) {
+        this.clearViewport();
+        let entity = new LayoutEntity(id, this._data, this._callback);
+        entity.article(id, this._viewport, this._insertSections);
+    }
+    clearViewport() {
+        while (this._viewport.lastChild)
+            this._viewport.removeChild(this._viewport.lastChild);
+    }
+}
+
+export { Sectional };

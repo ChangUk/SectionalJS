@@ -1,5 +1,5 @@
 import renderMathInElement from "./lib/katex/contrib/auto-render.js";
-import { Sectional } from "./lib/sectional-esm/sectional.js";
+import { Sectional } from "./lib/sectional/sectional-esm.js";
 import { Remarkable } from "./lib/remarkable/remarkable.js";
 
 // Initialization
