@@ -83,12 +83,8 @@ table.stnl-ledger .hidden {
 table.stnl-ledger thead {
 	border-bottom: 2px solid #d1d1d1;
 }
-table.stnl-ledger thead tr::before {
-	content: "";
-	min-width: 50px;
-}
 table.stnl-ledger th {
-	padding: 0 !important;
+	padding: 0.5em 0 !important;
 	background: whitesmoke;
 	border: 1px solid #dedede;
 }
@@ -104,28 +100,22 @@ table.stnl-ledger td > p:last-child {
 }
 table.stnl-ledger th input.stnl-filter-combobox {
 	margin: 0;
-	padding: 0.5em;
+	padding: 0.2em;
 	width: 100%;
 	border: none;
 	background: transparent;
-	font: 600 16px/1.6 "Chosunilbo_myungjo";
+	font: 600 16px/1 "Chosunilbo_myungjo";
 	color: #383838;
 	text-align: center;
 	box-sizing: border-box;
 }
 table.stnl-ledger th input.stnl-filter-combobox::placeholder {
-	font: 600 16px/1.6 "Chosunilbo_myungjo";
+	font: 600 16px/1 "Chosunilbo_myungjo";
 	color: #383838;
 	text-align: center;
 }
 table.stnl-ledger th input.stnl-filter-combobox:focus::placeholder {
 	color: #7f7f7f;
-}
-table.stnl-ledger tbody {
-	counter-reset: var(--stnlRowCounterId);
-}
-table.stnl-ledger tbody tr::before {
-	content: counter(var(--stnlRowCounterId));
 }
 table.stnl-ledger tbody tr:hover {
 	background: whitesmoke;
@@ -133,23 +123,18 @@ table.stnl-ledger tbody tr:hover {
 table.stnl-ledger tbody td {
 	white-space: nowrap;
 }
-table.stnl-ledger tr {
-	counter-increment: var(--stnlRowCounterId);
-}
-table.stnl-ledger tr::before {
-	display: table-cell;
+table.stnl-ledger td:first-child {
 	padding: 0.5em 0.8em;
 	width: 1%;
+	min-width: 50px;
 	font: 600 16px/1.6 "Chosunilbo_myungjo";
 	text-align: right;
 	white-space: nowrap;
 	background: whitesmoke;
 	border: 1px solid #e8e8e8;
 	box-sizing: border-box;
-}
-table.stnl-ledger tfoot tr::before {
-	content: "";
-	min-width: 50px;
+	user-select: none;
+	-ms-user-select: none !important;
 }
 table.stnl-ledger tfoot td {
 	line-height: 1.2;

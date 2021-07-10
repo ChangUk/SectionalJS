@@ -17,7 +17,8 @@
 	<script src="lib/require/require.min.js"></script>
 
 	<!-- Main script -->
-	<script src="main.js"></script>
+	<script nomodule src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+	<script src="main-ie11.js"></script>
 </head>
 <body>
 	<div id="articles"></div>

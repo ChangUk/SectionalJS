@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-    require(['lib/sectional-js/sectional'], function (module) {
+    require(["lib/sectional/sectional.umd"], function (module) {
         var Sectional = module.Sectional;
-        console.log(Sectional);
 
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {

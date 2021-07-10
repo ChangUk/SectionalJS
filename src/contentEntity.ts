@@ -600,6 +600,9 @@ export class Ledger extends ContentEntity {
 		let tr = document.createElement("tr");
 		thead.appendChild(tr);
 
+		let th = document.createElement("th");
+		tr.appendChild(th);
+
 		this._keys.forEach((key: ColumnKey, col: number) => {
 			let th = document.createElement("th");
 			th.setAttribute("row", "0");
@@ -636,17 +639,17 @@ export class Ledger extends ContentEntity {
 					let table = <HTMLTableElement>document.querySelector(`#${this.idfmt(this._id)}`);
 					let tbody = table.querySelector("tbody");
 					let tableRows = (<HTMLTableSectionElement>tbody).querySelectorAll("tr");
-					let col = parseInt(<string>el.getAttribute("col"));
+					let col = parseInt(<string>el.getAttribute("col")) + 1;
 
 					// Reset masking
-					tableRows.forEach((tr: HTMLTableRowElement, row: number) => {
+					Array.from(tableRows).forEach((tr: HTMLTableRowElement, row: number) => {
 						this._mask[row][col] = 1;
 					});
 
 					// Masking
 					if (el.value.length) {
 						el.setAttribute("list", "");
-						tableRows.forEach((tr: HTMLTableRowElement, row: number) => {
+						Array.from(tableRows).forEach((tr: HTMLTableRowElement, row: number) => {
 							try {
 								let regex = new RegExp(`${el.value}`, "gi");
 								let str = (<HTMLTableDataCellElement>tr.childNodes[col]).innerText;
@@ -678,7 +681,8 @@ export class Ledger extends ContentEntity {
 					});
 
 					// Hide filtered rows
-					tableRows.forEach((tr, row) => {
+					let index = 1;
+					Array.from(tableRows).forEach((tr, row) => {
 						if (
 							this._mask[row].reduce((a, b) => {
 								return a * b;
@@ -692,6 +696,10 @@ export class Ledger extends ContentEntity {
 								let filterValue = record.content[key];
 								if (filterValue && this._values[key].indexOf(filterValue) < 0) this._values[key].push(filterValue);
 							});
+							if (tr.firstElementChild) {
+								tr.firstElementChild.innerHTML = index.toString();
+								index++;
+							}
 						} else {
 							tr.classList.add("hidden");
 						}
@@ -766,7 +774,7 @@ export class Ledger extends ContentEntity {
 		this._records.forEach((childId: EntityID, order: number) => {
 			let child = this._getEntity(childId);
 			if (!child) return;
-			if (child.type === "ledgerRecord") this._putRecord(childId, tbody);
+			if (child.type === "ledgerRecord") this._putRecord(order + 1, childId, tbody);
 		});
 
 		// Sort suggestion list of column filter
@@ -780,7 +788,7 @@ export class Ledger extends ContentEntity {
 		});
 	}
 
-	private _putRecord(id: EntityID, parentEl: HTMLElement): void {
+	private _putRecord(order: number, id: EntityID, parentEl: HTMLElement): void {
 		if (!parentEl) throw new Error(`Invalid "parentEl": ${parentEl}`);
 
 		let entity = this._getEntity(id);
@@ -793,6 +801,10 @@ export class Ledger extends ContentEntity {
 		tr.id = this.idfmt(id);
 		tr.style.setProperty(`--${this.cssvarfmt("RowCounterId")}`, parentEl.id);
 		parentEl.appendChild(tr);
+
+		let td = document.createElement("td");
+		td.innerHTML = order.toString();
+		tr.appendChild(td);
 
 		for (const key of this._keys) {
 			let td = document.createElement("td");
@@ -836,6 +848,9 @@ export class Ledger extends ContentEntity {
 			footerRow = document.createElement("tr");
 			tfoot.appendChild(footerRow);
 		}
+
+		let td = document.createElement("td");
+		footerRow.appendChild(td);
 
 		// Get column statistics
 		for (const key of this._keys) {
