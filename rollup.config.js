@@ -1,6 +1,6 @@
 import pkg from "./package.json";
 import typescript from "@rollup/plugin-typescript";
-import { uglify } from "rollup-plugin-uglify";
+import { uglify } from "rollup-plugin-terser";
 import { getBabelOutputPlugin } from "@rollup/plugin-babel";
 
 export default [{
@@ -14,7 +14,7 @@ export default [{
             tsconfig: "tsconfig.json",
             sourceMap: false
         }),
-        uglify()
+        terser()
     ]
 }, {
     input: `src/${pkg.name}.ts`,
@@ -23,7 +23,7 @@ export default [{
             tsconfig: "tsconfig.json",
             sourceMap: false
         }),
-        uglify()
+        terser()
     ],
     output: [{
         name: "sectional",
